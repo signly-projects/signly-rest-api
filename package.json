@@ -1,0 +1,23 @@
+{
+  "name": "signly-content-nodejs",
+  "version": "0.1.0",
+  "description": "Signly Content Server in NodeJS",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@ssh.dev.azure.com:v3/signly/SignlyBrowserExtension/signly-content-nodejs"
+  },
+  "author": "Alex Malhao",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.0"
+  }
+}
