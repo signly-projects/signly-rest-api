@@ -35,6 +35,6 @@ exports.createMediaBlock = (req, res, next) => {
     // Return create status AND the created media block object
     res.status(201).json({
         message: 'Media block created successfully.',
-        site: site
+        site: mediaBlock
     });
 };

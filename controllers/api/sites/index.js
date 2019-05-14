@@ -38,7 +38,7 @@ exports.createSite = (req, res, next) => {
     const site = {
         id: '1',
         title: req.body.title,
-        baseUrl: req.body.url,
+        url: req.body.url,
         company: {
             id: '1',
             name: req.body.companyName,

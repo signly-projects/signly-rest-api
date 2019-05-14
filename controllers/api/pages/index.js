@@ -27,7 +27,7 @@ exports.createPage = (req, res, next) => {
   const site = { 
     id: '1', 
     title: 'Lloyds Bank', 
-    baseUrl: req.body.pageBaseUrl,
+    url: req.body.pageBaseUrl,
     company: {
       id: '1',
       name: 'Lloyds'
@@ -37,7 +37,7 @@ exports.createPage = (req, res, next) => {
   // (try to) fetch web page details using 'req.body.pageUrl'
   const page = {
     id: '1234-qwer',
-    url: req.body.pageUrl,
+    url: req.body.url,
     requests: 1,
     mediaBlocks: req.body.mediaBlocks || [],
     createdAt: new Date(),
