@@ -1,3 +1,5 @@
+const { validationResult } = require('express-validator/check')
+
 exports.getPages = (req, res, next) => {
   res.status(200).json({
     pages: [
@@ -8,9 +10,9 @@ exports.getPages = (req, res, next) => {
         mediaBlocks: ['1', '2', '3'],
         createdAt: new Date(),
         lastRequested: new Date(),
-        site: { 
-          id: '1', 
-          title: 'Lloyds', 
+        site: {
+          id: '1',
+          title: 'Lloyds',
           baseUrl: 'https://www.lloydsbank.com',
           company: {
             id: '1',
@@ -19,14 +21,25 @@ exports.getPages = (req, res, next) => {
         }
       }
     ]
-  });
-};
+  })
+}
 
 exports.createPage = (req, res, next) => {
+  const errors = validationResult(req)
+
+  if (!errors.isEmpty()) {
+    return res
+      .status(422)
+      .json({
+        message: 'Web page create validation failed. Request data is incorrect.',
+        errors: errors.array()
+      })
+  }
+
   // (try to) fetch web site details using 'req.body.pageBaseUrl'
-  const site = { 
-    id: '1', 
-    title: 'Lloyds Bank', 
+  const site = {
+    id: '1',
+    title: 'Lloyds Bank',
     url: req.body.pageBaseUrl,
     company: {
       id: '1',
@@ -48,5 +61,5 @@ exports.createPage = (req, res, next) => {
   res.status(201).json({
     message: 'Page created successfully.',
     page: page
-  });
-};
+  })
+}
