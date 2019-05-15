@@ -18,7 +18,7 @@ router.post(
       .withMessage('Web site title is empty.'),
     body('url')
       .isURL()
-      .withMessage(`Web site base URL doesn't seem to be valid.`)
+      .withMessage('Web site base URL doesn\'t seem to be valid.')
   ],
   createSite
 )
