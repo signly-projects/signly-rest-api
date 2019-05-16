@@ -13,7 +13,7 @@ router.post(
   '/pages',
   [
     body('url')
-      .matches(/^\/[a-z0-9]*$/i, 'g')
+      .matches(/^\/.*$/i, 'g')
       .withMessage(`Web page relative URL should start with a '/'.`),
     body('baseUrl')
       .isURL()
