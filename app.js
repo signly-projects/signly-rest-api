@@ -1,6 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 
+require('dotenv').config()
+
+const mongoConnect = require('./util/database')
+
 const pagesRoutes = require('./routes/pages')
 const sitesRoutes = require('./routes/sites')
 const mediaBlocksRoutes = require('./routes/media-blocks')
@@ -20,4 +24,7 @@ app.use('/api', pagesRoutes)
 app.use('/api', sitesRoutes)
 app.use('/api', mediaBlocksRoutes)
 
-app.listen(8080)
+mongoConnect(client => {
+  console.log(client)
+  app.listen(process.env.SERVER_PORT)
+})
