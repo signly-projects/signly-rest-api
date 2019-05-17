@@ -18,6 +18,22 @@ class Page {
         console.log(err)
       })
   }
+
+  static fetchAll () {
+    const db = getDb()
+    return db.collection('pages')
+      .find()
+      .toArray()
+      .then(pages => {
+        // eslint-disable-next-line no-console
+        console.log(pages)
+        return pages
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+  }
 }
 
 module.exports = Page

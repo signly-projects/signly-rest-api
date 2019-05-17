@@ -3,27 +3,14 @@ const { validationResult } = require('express-validator/check')
 const Page = require('../../models/page')
 
 exports.getPages = (req, res, next) => {
-  res.status(200).json({
-    pages: [
-      {
-        id: '1',
-        url: '/',
-        requests: 1,
-        mediaBlocks: ['1', '2', '3'],
-        createdAt: new Date(),
-        lastRequested: new Date(),
-        site: {
-          id: '1',
-          title: 'Lloyds',
-          baseUrl: 'https://www.lloydsbank.com',
-          company: {
-            id: '1',
-            name: 'Lloyds'
-          }
-        }
-      }
-    ]
-  })
+  Page.fetchAll()
+    .then(pages => {
+      res.status(200).json({ pages: pages })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
 }
 
 exports.createPage = (req, res, next) => {
@@ -43,17 +30,13 @@ exports.createPage = (req, res, next) => {
   page
     .save()
     .then(result => {
-      // eslint-disable-next-line no-console
-      console.log('Web page created.', result)
+      res.status(201).json({
+        message: 'Page created successfully.',
+        page: result
+      })
     })
     .catch(err => {
       // eslint-disable-next-line no-console
       console.log(err)
     })
-
-  // Return create status AND the created web page object
-  res.status(201).json({
-    message: 'Page created successfully.',
-    page: page
-  })
 }

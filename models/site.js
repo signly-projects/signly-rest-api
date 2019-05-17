@@ -19,6 +19,22 @@ class Site {
         console.log(err)
       })
   }
+
+  static fetchAll () {
+    const db = getDb()
+    return db.collection('sites')
+      .find()
+      .toArray()
+      .then(sites => {
+        // eslint-disable-next-line no-console
+        console.log(sites)
+        return sites
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+  }
 }
 
 module.exports = Site
