@@ -11,10 +11,10 @@ router.get('/media-blocks', getMediaBlocks)
 // POST /api/media-blocks
 router.post('/media-blocks',
   [
-    body('text')
+    body('transcript')
       .trim()
       .not().isEmpty()
-      .withMessage('Media block text is empty.')
+      .withMessage('Media block transcript is empty.')
   ],
   createMediaBlock)
 

@@ -1,5 +1,7 @@
 const { validationResult } = require('express-validator/check')
 
+const Page = require('../../models/page')
+
 exports.getPages = (req, res, next) => {
   res.status(200).json({
     pages: [
@@ -36,27 +38,19 @@ exports.createPage = (req, res, next) => {
       })
   }
 
-  // (try to) fetch web site details using 'req.body.pageBaseUrl'
-  const site = {
-    id: '1',
-    title: 'Lloyds Bank',
-    url: req.body.pageBaseUrl,
-    company: {
-      id: '1',
-      name: 'Lloyds'
-    }
-  }
+  const page = new Page(req.body.url)
 
-  // (try to) fetch web page details using 'req.body.pageUrl'
-  const page = {
-    id: '1234-qwer',
-    url: req.body.url,
-    requests: 1,
-    mediaBlocks: req.body.mediaBlocks || [],
-    createdAt: new Date(),
-    lastRequested: new Date(),
-    site: site
-  }
+  page
+    .save()
+    .then(result => {
+      // eslint-disable-next-line no-console
+      console.log('Web page created.', result)
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+
   // Return create status AND the created web page object
   res.status(201).json({
     message: 'Page created successfully.',

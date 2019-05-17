@@ -1,5 +1,7 @@
 const { validationResult } = require('express-validator/check')
 
+const Site = require('../../models/site')
+
 exports.getSites = (req, res, next) => {
   // fetch web sites from DB
   res.status(200).json({
@@ -47,16 +49,19 @@ exports.createSite = (req, res, next) => {
       })
   }
 
-  // (try to) fetch web site details using 'req.body.siteUrl' from DB
-  const site = {
-    id: '1',
-    title: req.body.title,
-    url: req.body.url,
-    company: {
-      id: '1',
-      name: req.body.companyName
-    }
-  }
+  const site = new Site(req.body.title, req.body.url)
+
+  site
+    .save()
+    .then(result => {
+      // eslint-disable-next-line no-console
+      console.log('Site created.', result)
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+
   // Return create status AND the created web site object
   res.status(201).json({
     message: 'Site created successfully.',

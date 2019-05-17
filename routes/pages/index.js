@@ -13,11 +13,8 @@ router.post(
   '/pages',
   [
     body('url')
-      .matches(/^\/.*$/i, 'g')
-      .withMessage(`Web page relative URL should start with a '/'.`),
-    body('baseUrl')
       .isURL()
-      .withMessage(`Web page base URL doesn't seem to be valid.`)
+      .withMessage('Web page base URL doesn\'t seem to be valid.`')
   ],
   createPage
 )
