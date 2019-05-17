@@ -1,12 +1,15 @@
 const express = require('express')
 const { body } = require('express-validator/check')
 
-const { getSites, createSite } = require('../../controllers/sites')
+const { getSites, getSite, createSite } = require('../../controllers/sites')
 
 const router = express.Router()
 
 // GET /api/sites
 router.get('/sites', getSites)
+
+// GET /api/sites/:siteId
+router.get('/sites/:siteId', getSite)
 
 // POST /api/sites
 router.post(

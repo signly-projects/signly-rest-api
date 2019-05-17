@@ -13,6 +13,19 @@ exports.getPages = (req, res, next) => {
     })
 }
 
+exports.getPage = (req, res, next) => {
+  const pageId = req.params.pageId
+
+  Page.findById(pageId)
+    .then(page => {
+      res.status(200).json({ page: page })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}
+
 exports.createPage = (req, res, next) => {
   const errors = validationResult(req)
 

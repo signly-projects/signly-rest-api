@@ -25,11 +25,11 @@
             "never"
         ],
         "no-unused-vars": [
-            "error", 
-            { 
-                "argsIgnorePattern": 
-                "next" 
+            "error",
+            {
+                "argsIgnorePattern": "next"
             }
-        ]
+        ],
+        "space-before-function-paren": "error"
     }
 }

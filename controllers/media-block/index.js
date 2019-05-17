@@ -13,6 +13,19 @@ exports.getMediaBlocks = (req, res, next) => {
     })
 }
 
+exports.getMediaBlock = (req, res, next) => {
+  const mediaBlockId = req.params.mediaBlockId
+
+  MediaBlock.findById(mediaBlockId)
+    .then(mediaBlock => {
+      res.status(200).json({ mediaBlock: mediaBlock })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}
+
 exports.createMediaBlock = (req, res, next) => {
   const errors = validationResult(req)
 

@@ -13,6 +13,19 @@ exports.getSites = (req, res, next) => {
     })
 }
 
+exports.getSite = (req, res, next) => {
+  const siteId = req.params.siteId
+
+  Site.findById(siteId)
+    .then(site => {
+      res.status(200).json({ site: site })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}
+
 exports.createSite = (req, res, next) => {
   const errors = validationResult(req)
 
