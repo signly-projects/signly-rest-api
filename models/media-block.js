@@ -7,7 +7,7 @@ const coll = 'mediablocks'
 class MediaBlock {
   constructor (transcript, id) {
     this.transcript = transcript
-    this._id = new mongodb.ObjectId(id)
+    this._id = id ? new mongodb.ObjectId(id) : null  
   }
 
   save () {
@@ -61,6 +61,23 @@ class MediaBlock {
       .next()
       .then(mediaBlock => {
         return mediaBlock
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+  }
+
+  static deleteById (mediaBlockId) {
+    const db = getDb()
+    return db
+      .collection(coll)
+      .deleteOne({
+        _id: new mongodb.ObjectId(mediaBlockId)
+      })
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('Media block deleted.')
       })
       .catch(err => {
         // eslint-disable-next-line no-console

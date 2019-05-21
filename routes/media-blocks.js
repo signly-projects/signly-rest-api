@@ -1,7 +1,13 @@
 const express = require('express')
 const { body } = require('express-validator/check')
 
-const { getMediaBlocks, getMediaBlock, createMediaBlock, updateMediaBlock } = require('../controllers/media-blocks')
+const { 
+  getMediaBlocks, 
+  getMediaBlock, 
+  createMediaBlock, 
+  updateMediaBlock, 
+  deleteMediaBlock 
+} = require('../controllers/media-blocks')
 
 const router = express.Router()
 
@@ -25,5 +31,7 @@ router.post('/media-blocks',
 // PUT /api/media-blocks/:mediaBlockId
 router.put('/media-blocks/:mediaBlockId', updateMediaBlock)
 
+// DELETE /api/sites/:siteId
+router.delete('/media-blocks/:mediaBlockId', deleteMediaBlock)
 
 module.exports = router

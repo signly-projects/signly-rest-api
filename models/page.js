@@ -6,7 +6,7 @@ const coll = 'pages'
 class Page {
   constructor (url, id) {
     this.url = url
-    this._id = new mongodb.ObjectId(id)
+    this._id = id ? new mongodb.ObjectId(id) : null
   }
 
   save () {
@@ -60,6 +60,23 @@ class Page {
       .next()
       .then(page => {
         return page
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+  }
+
+  static deleteById (pageId) {
+    const db = getDb()
+    return db
+      .collection(coll)
+      .deleteOne({
+        _id: new mongodb.ObjectId(pageId)
+      })
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('Media block deleted.')
       })
       .catch(err => {
         // eslint-disable-next-line no-console

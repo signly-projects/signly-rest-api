@@ -1,7 +1,7 @@
 const express = require('express')
 const { body } = require('express-validator/check')
 
-const { getPages, getPage, createPage, updatePage } = require('../controllers/pages')
+const { getPages, getPage, createPage, updatePage, deletePage } = require('../controllers/pages')
 
 const router = express.Router()
 
@@ -32,5 +32,8 @@ router.put(
   ],
   updatePage
 )
+
+// DELETE /api/sites/:pageId
+router.delete('/pages/:pageId', deletePage)
 
 module.exports = router

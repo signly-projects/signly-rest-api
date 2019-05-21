@@ -87,3 +87,18 @@ exports.updateSite = (req, res, next) => {
       console.log(err)
     })
 }
+
+exports.deleteSite = (req, res, next) => {
+  const siteId = req.params.siteId
+
+  Site.deleteById(siteId)
+    .then(() => {
+      res.status(204).json({
+        message: 'Site deleted successfully.'
+      })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}

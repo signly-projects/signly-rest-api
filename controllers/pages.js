@@ -83,3 +83,18 @@ exports.updatePage = (req, res, next) => {
       console.log(err)
     })
 }
+
+exports.deletePage = (req, res, next) => {
+  const pageId = req.params.pageId
+
+  Page.deleteById(pageId)
+    .then(() => {
+      res.status(204).json({
+        message: 'Page deleted successfully.'
+      })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}

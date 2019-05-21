@@ -83,3 +83,18 @@ exports.updateMediaBlock = (req, res, next) => {
       console.log(err)
     })
 }
+
+exports.deleteMediaBlock = (req, res, next) => {
+  const mediaBlockId = req.params.mediaBlockId
+
+  MediaBlock.deleteById(mediaBlockId)
+    .then(() => {
+      res.status(204).json({
+        message: 'Media block deleted successfully.'
+      })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}

@@ -7,7 +7,7 @@ class Site {
   constructor (title, url, id) {
     this.title = title
     this.url = url
-    this._id = new mongodb.ObjectId(id)
+    this._id = id ? new mongodb.ObjectId(id) : null
   }
 
   save () {
@@ -61,6 +61,23 @@ class Site {
       .next()
       .then(site => {
         return site
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+  }
+
+  static deleteById (siteId) {
+    const db = getDb()
+    return db
+      .collection(coll)
+      .deleteOne({
+        _id: new mongodb.ObjectId(siteId)
+      })
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log('Site deleted.')
       })
       .catch(err => {
         // eslint-disable-next-line no-console
