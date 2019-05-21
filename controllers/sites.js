@@ -1,6 +1,5 @@
 const { validationResult } = require('express-validator/check')
-
-const Site = require('../../models/site')
+const Site = require('../models/site')
 
 exports.getSites = (req, res, next) => {
   Site.fetchAll()
@@ -38,13 +37,48 @@ exports.createSite = (req, res, next) => {
       })
   }
 
-  const site = new Site(req.body.title, req.body.url)
+  const title = req.body.title
+  const url = req.body.url
+
+  const site = new Site(title, url)
 
   site
     .save()
     .then(result => {
       res.status(201).json({
         message: 'Site created successfully.',
+        site: result
+      })
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.log(err)
+    })
+}
+
+exports.updateSite = (req, res, next) => {
+  const errors = validationResult(req)
+
+  if (!errors.isEmpty()) {
+    return res
+      .status(422)
+      .json({
+        message: 'Web site update validation failed. Request data is incorrect.',
+        errors: errors.array()
+      })
+  }
+
+  const siteId = req.params.siteId
+  const title = req.body.title
+  const url = req.body.url
+
+  const updatedSite = new Site(title, url, siteId)
+
+  updatedSite
+    .save()
+    .then(result => {
+      res.status(201).json({
+        message: 'Site updated successfully.',
         site: result
       })
     })

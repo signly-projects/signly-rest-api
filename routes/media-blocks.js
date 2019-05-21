@@ -1,7 +1,7 @@
 const express = require('express')
 const { body } = require('express-validator/check')
 
-const { getMediaBlocks, getMediaBlock, createMediaBlock } = require('../../controllers/media-block')
+const { getMediaBlocks, getMediaBlock, createMediaBlock, updateMediaBlock } = require('../controllers/media-blocks')
 
 const router = express.Router()
 
@@ -19,6 +19,11 @@ router.post('/media-blocks',
       .not().isEmpty()
       .withMessage('Media block transcript is empty.')
   ],
-  createMediaBlock)
+  createMediaBlock
+)
+
+// PUT /api/media-blocks/:mediaBlockId
+router.put('/media-blocks/:mediaBlockId', updateMediaBlock)
+
 
 module.exports = router

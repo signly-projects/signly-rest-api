@@ -1,20 +1,29 @@
-const MongoDb = require('mongodb')
+const mongodb = require('mongodb')
 
 const getDb = require('../util/database').getDb
 
+const coll = 'pages'
 class Page {
-  static get coll () {
-    return 'pages'
-  }
-
-  constructor (url) {
+  constructor (url, id) {
     this.url = url
+    this._id = new mongodb.ObjectId(id)
   }
 
   save () {
     const db = getDb()
-    return db.collection(this.coll)
-      .insertOne(this)
+    let dbOp
+
+    if (this._id) {
+      dbOp = db
+        .collection(coll)
+        .updateOne({ _id: this._id }, { $set: this })
+    } else {
+      dbOp = db
+        .collection(coll)
+        .insertOne(this)
+    }
+
+    return dbOp
       .then(result => {
         // eslint-disable-next-line no-console
         console.log(result)
@@ -27,7 +36,7 @@ class Page {
 
   static fetchAll () {
     const db = getDb()
-    return db.collection(this.coll)
+    return db.collection(coll)
       .find()
       .toArray()
       .then(pages => {
@@ -44,9 +53,9 @@ class Page {
   static findById (pageId) {
     const db = getDb()
     return db
-      .collection(this.coll)
+      .collection(coll)
       .find({
-        _id: new MongoDb.ObjectId(pageId)
+        _id: new mongodb.ObjectId(pageId)
       })
       .next()
       .then(page => {

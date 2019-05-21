@@ -1,7 +1,7 @@
 const express = require('express')
 const { body } = require('express-validator/check')
 
-const { getSites, getSite, createSite } = require('../../controllers/sites')
+const { getSites, getSite, createSite, updateSite } = require('../controllers/sites')
 
 const router = express.Router()
 
@@ -25,5 +25,21 @@ router.post(
   ],
   createSite
 )
+
+// PUT /api/sites/:siteId
+router.put(
+  '/sites/:siteId', 
+  [
+    body('title')
+      .trim()
+      .not().isEmpty()
+      .withMessage('Web site title is empty.'),
+    body('url')
+      .isURL()
+      .withMessage('Web site base URL doesn\'t seem to be valid.')
+  ],
+  updateSite
+)
+
 
 module.exports = router

@@ -1,22 +1,30 @@
-const MongoDb = require('mongodb')
+const mongodb = require('mongodb')
 
 const getDb = require('../util/database').getDb
 
-class MediaBlock {
-  static get coll () {
-    return 'mediablocks'
-  }
+const coll = 'mediablocks'
 
-  constructor (transcript, videoUrl, bslScript) {
+class MediaBlock {
+  constructor (transcript, id) {
     this.transcript = transcript
-    this.videoUrl = videoUrl
-    this.bslScript = bslScript
+    this._id = new mongodb.ObjectId(id)
   }
 
   save () {
     const db = getDb()
-    return db.collection(this.coll)
-      .insertOne(this)
+    let dbOp
+
+    if (this._id) {
+      dbOp = db
+        .collection(coll)
+        .updateOne({ _id: this._id }, { $set: this })
+    } else {
+      dbOp = db
+        .collection(coll)
+        .insertOne(this)
+    }
+
+    return dbOp
       .then(result => {
         // eslint-disable-next-line no-console
         console.log(result)
@@ -29,13 +37,13 @@ class MediaBlock {
 
   static fetchAll () {
     const db = getDb()
-    return db.collection(this.coll)
+    return db.collection(coll)
       .find()
       .toArray()
-      .then(mediablocks => {
+      .then(mediaBlocks => {
         // eslint-disable-next-line no-console
-        console.log(mediablocks)
-        return mediablocks
+        console.log(mediaBlocks)
+        return mediaBlocks
       })
       .catch(err => {
         // eslint-disable-next-line no-console
@@ -43,12 +51,12 @@ class MediaBlock {
       })
   }
 
-  static findById (mediaBlockId) {
+  static findById (mediaBlock) {
     const db = getDb()
     return db
-      .collection(this.coll)
+      .collection(coll)
       .find({
-        _id: new MongoDb.ObjectId(mediaBlockId)
+        _id: new mongodb.ObjectId(mediaBlock)
       })
       .next()
       .then(mediaBlock => {
