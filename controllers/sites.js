@@ -7,9 +7,10 @@ exports.getSites = (req, res, next) => {
       res.status(200).json({ sites: sites })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -21,9 +22,10 @@ exports.getSite = (req, res, next) => {
       res.status(200).json({ site: site })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -31,12 +33,10 @@ exports.createSite = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Web site create validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Site create validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const site = new Site({
@@ -53,9 +53,10 @@ exports.createSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -63,12 +64,10 @@ exports.updateSite = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Web site update validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Site update validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const siteId = req.params.siteId
@@ -79,7 +78,7 @@ exports.updateSite = (req, res, next) => {
     .then(site => {
       site.title = title
       site.url = url
-      return site.save()
+      site.save()
     })
     .then(result => {
       res.status(201).json({
@@ -88,9 +87,10 @@ exports.updateSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -104,8 +104,9 @@ exports.deleteSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }

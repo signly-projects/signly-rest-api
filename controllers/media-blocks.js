@@ -7,9 +7,10 @@ exports.getMediaBlocks = (req, res, next) => {
       res.status(200).json({ mediaBlocks: mediaBlocks })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -21,9 +22,10 @@ exports.getMediaBlock = (req, res, next) => {
       res.status(200).json({ mediaBlock: mediaBlock })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -31,12 +33,10 @@ exports.createMediaBlock = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Media block create validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Media block create validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const mediaBlock = new MediaBlock({
@@ -52,9 +52,10 @@ exports.createMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -62,12 +63,10 @@ exports.updateMediaBlock = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Web media block update validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Media block update validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const mediaBlockId = req.params.mediaBlockId
@@ -85,9 +84,10 @@ exports.updateMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -101,8 +101,9 @@ exports.deleteMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }

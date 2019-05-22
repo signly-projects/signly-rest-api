@@ -7,9 +7,10 @@ exports.getPages = (req, res, next) => {
       res.status(200).json({ pages: pages })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -21,9 +22,10 @@ exports.getPage = (req, res, next) => {
       res.status(200).json({ page: page })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -31,12 +33,10 @@ exports.createPage = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Web page create validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Page create validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const page = new Page({
@@ -52,9 +52,10 @@ exports.createPage = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -62,12 +63,10 @@ exports.updatePage = (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        message: 'Web page update validation failed. Request data is incorrect.',
-        errors: errors.array()
-      })
+    const error = new Error('Page update validation failed. Request data is incorrect.')
+    error.httpStatusCode = 422
+    error.details = errors.array()
+    throw error
   }
 
   const pageId = req.params.pageId
@@ -85,9 +84,10 @@ exports.updatePage = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }
 
@@ -101,8 +101,9 @@ exports.deletePage = (req, res, next) => {
       })
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
+      if (!err.httpStatusCode) {
+        err.httpStatusCode = 500
+      }
+      next(err)
     })
 }

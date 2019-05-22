@@ -23,6 +23,16 @@ app.use('/api', pagesRoutes)
 app.use('/api', sitesRoutes)
 app.use('/api', mediaBlocksRoutes)
 
+app.use((error, req, res, next) => {
+  const httpStatusCode = error.httpStatusCode || 500
+  const message = error.message
+
+  res.status(httpStatusCode).json({
+    message: message,
+    errors: error.details
+  })
+})
+
 mongoose
   .connect(
     `mongodb://${process.env.COSMOSDB_ACCOUNT}:${process.env.COSMOSDB_KEY}@${process.env.COSMOSDB_ACCOUNT}.documents.azure.com:${process.env.COSMOSDB_PORT}/${process.env.COSMOSDB_DB}?ssl=true`,
