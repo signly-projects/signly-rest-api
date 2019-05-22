@@ -19,6 +19,12 @@ exports.getSite = (req, res, next) => {
 
   Site.findById(siteId)
     .then(site => {
+      if (!site) {
+        const error = new Error('Site not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
       res.status(200).json({ site: site })
     })
     .catch(err => {
@@ -76,12 +82,18 @@ exports.updateSite = (req, res, next) => {
 
   Site.findById(siteId)
     .then(site => {
+      if (!site) {
+        const error = new Error('Site not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
       site.title = title
       site.url = url
       site.save()
     })
     .then(result => {
-      res.status(201).json({
+      res.status(204).json({
         message: 'Site updated successfully.',
         site: result
       })
@@ -97,9 +109,18 @@ exports.updateSite = (req, res, next) => {
 exports.deleteSite = (req, res, next) => {
   const siteId = req.params.siteId
 
-  Site.findByIdAndRemove(siteId)
+  Site.findById(siteId)
+    .then(site => {
+      if (!site) {
+        const error = new Error('Site not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
+      return Site.findByIdAndDelete(siteId)
+    })
     .then(() => {
-      res.status(204).json({
+      res.status(200).json({
         message: 'Site deleted successfully.'
       })
     })

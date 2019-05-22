@@ -19,6 +19,12 @@ exports.getMediaBlock = (req, res, next) => {
 
   MediaBlock.findById(mediaBlockId)
     .then(mediaBlock => {
+      if (!mediaBlock) {
+        const error = new Error('Media block not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
       res.status(200).json({ mediaBlock: mediaBlock })
     })
     .catch(err => {
@@ -74,6 +80,12 @@ exports.updateMediaBlock = (req, res, next) => {
 
   MediaBlock.findById(mediaBlockId)
     .then(mediaBlock => {
+      if (!mediaBlock) {
+        const error = new Error('Media block not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
       mediaBlock.transcript = transcript
       return mediaBlock.save()
     })
@@ -94,9 +106,18 @@ exports.updateMediaBlock = (req, res, next) => {
 exports.deleteMediaBlock = (req, res, next) => {
   const mediaBlockId = req.params.mediaBlockId
 
-  MediaBlock.findByIdAndRemove(mediaBlockId)
+  MediaBlock.findById(mediaBlockId)
+    .then(mediaBlock => {
+      if (!mediaBlock) {
+        const error = new Error('Media block not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
+      return MediaBlock.findByIdAndDelete(mediaBlockId)
+    })
     .then(() => {
-      res.status(204).json({
+      res.status(200).json({
         message: 'Media block deleted successfully.'
       })
     })

@@ -19,6 +19,12 @@ exports.getPage = (req, res, next) => {
 
   Page.findById(pageId)
     .then(page => {
+      if (!page) {
+        const error = new Error('Page not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
       res.status(200).json({ page: page })
     })
     .catch(err => {
@@ -74,11 +80,17 @@ exports.updatePage = (req, res, next) => {
 
   Page.findById(pageId)
     .then(page => {
+      if (!page) {
+        const error = new Error('Page not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+      
       page.url = url
       return page.save()
     })
     .then(result => {
-      res.status(201).json({
+      res.status(204).json({
         message: 'Page updated successfully.',
         page: result
       })
@@ -94,9 +106,18 @@ exports.updatePage = (req, res, next) => {
 exports.deletePage = (req, res, next) => {
   const pageId = req.params.pageId
 
-  Page.findByIdAndRemove(pageId)
+  Page.findById(pageId)
+    .then(page => {
+      if (!page) {
+        const error = new Error('Page not found.')
+        error.httpStatusCode = 404
+        throw error
+      }
+
+      return Page.findByIdAndDelete(pageId)
+    })
     .then(() => {
-      res.status(204).json({
+      res.status(200).json({
         message: 'Page deleted successfully.'
       })
     })
