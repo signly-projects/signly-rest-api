@@ -18,18 +18,26 @@ router.get('/media-blocks', getMediaBlocks)
 router.get('/media-blocks/:mediaBlockId', getMediaBlock)
 
 // POST /api/media-blocks
-router.post('/media-blocks',
+router.post(
+  '/media-blocks',
   [
     body('transcript')
       .trim()
-      .not().isEmpty()
-      .withMessage('Media block transcript is empty.')
+      .isLength({ min: 2 })
   ],
   createMediaBlock
 )
 
 // PUT /api/media-blocks/:mediaBlockId
-router.put('/media-blocks/:mediaBlockId', updateMediaBlock)
+router.put(
+  '/media-blocks/:mediaBlockId',
+  [
+    body('transcript')
+      .trim()
+      .isLength({ min: 2 })
+  ],
+  updateMediaBlock
+)
 
 // DELETE /api/sites/:siteId
 router.delete('/media-blocks/:mediaBlockId', deleteMediaBlock)

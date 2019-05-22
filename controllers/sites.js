@@ -7,8 +7,9 @@ exports.getSites = (req, res, next) => {
       res.status(200).json({ sites: sites })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -20,8 +21,9 @@ exports.getSite = (req, res, next) => {
       res.status(200).json({ site: site })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -51,8 +53,9 @@ exports.createSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -85,8 +88,9 @@ exports.updateSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -100,7 +104,8 @@ exports.deleteSite = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }

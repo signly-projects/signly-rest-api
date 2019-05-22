@@ -7,8 +7,9 @@ exports.getMediaBlocks = (req, res, next) => {
       res.status(200).json({ mediaBlocks: mediaBlocks })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -20,8 +21,9 @@ exports.getMediaBlock = (req, res, next) => {
       res.status(200).json({ mediaBlock: mediaBlock })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -50,8 +52,9 @@ exports.createMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -82,8 +85,9 @@ exports.updateMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -97,7 +101,8 @@ exports.deleteMediaBlock = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }

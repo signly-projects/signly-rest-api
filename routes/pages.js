@@ -17,7 +17,6 @@ router.post(
   [
     body('url')
       .isURL()
-      .withMessage('Web page base URL doesn\'t seem to be valid.')
   ],
   createPage
 )
@@ -28,7 +27,6 @@ router.put(
   [
     body('url')
       .isURL()
-      .withMessage('Web page base URL doesn\'t seem to be valid.')
   ],
   updatePage
 )

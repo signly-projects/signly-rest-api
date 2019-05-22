@@ -7,8 +7,9 @@ exports.getPages = (req, res, next) => {
       res.status(200).json({ pages: pages })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -20,8 +21,9 @@ exports.getPage = (req, res, next) => {
       res.status(200).json({ page: page })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -50,8 +52,9 @@ exports.createPage = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -82,8 +85,9 @@ exports.updatePage = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }
 
@@ -97,7 +101,8 @@ exports.deletePage = (req, res, next) => {
       })
     })
     .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
+      const error = new Error(err)
+      error.httpStatusCode = 500
+      return next(error)
     })
 }

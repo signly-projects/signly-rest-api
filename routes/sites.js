@@ -17,26 +17,22 @@ router.post(
   [
     body('title')
       .trim()
-      .not().isEmpty()
-      .withMessage('Web site title is empty.'),
+      .isLength({ min: 2 }),
     body('url')
       .isURL()
-      .withMessage('Web site base URL doesn\'t seem to be valid.')
   ],
   createSite
 )
 
 // PUT /api/sites/:siteId
 router.put(
-  '/sites/:siteId', 
+  '/sites/:siteId',
   [
     body('title')
       .trim()
-      .not().isEmpty()
-      .withMessage('Web site title is empty.'),
+      .isLength({ min: 2 }),
     body('url')
       .isURL()
-      .withMessage('Web site base URL doesn\'t seem to be valid.')
   ],
   updateSite
 )
