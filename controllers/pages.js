@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator/check')
 const Page = require('../models/page')
 
 exports.getPages = (req, res, next) => {
-  Page.fetchAll()
+  Page.find()
     .then(pages => {
       res.status(200).json({ pages: pages })
     })
@@ -37,7 +37,9 @@ exports.createPage = (req, res, next) => {
       })
   }
 
-  const page = new Page(req.body.url)
+  const page = new Page({
+    url: req.body.url
+  })
 
   page
     .save()
@@ -68,10 +70,11 @@ exports.updatePage = (req, res, next) => {
   const pageId = req.params.pageId
   const url = req.body.url
 
-  const updatedPage = new Page(url, pageId)
-
-  updatedPage
-    .save()
+  Page.findById(pageId)
+    .then(page => {
+      page.url = url
+      return page.save()
+    })
     .then(result => {
       res.status(201).json({
         message: 'Page updated successfully.',
@@ -87,7 +90,7 @@ exports.updatePage = (req, res, next) => {
 exports.deletePage = (req, res, next) => {
   const pageId = req.params.pageId
 
-  Page.deleteById(pageId)
+  Page.findByIdAndRemove(pageId)
     .then(() => {
       res.status(204).json({
         message: 'Page deleted successfully.'

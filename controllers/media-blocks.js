@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator/check')
 const MediaBlock = require('../models/media-block')
 
 exports.getMediaBlocks = (req, res, next) => {
-  MediaBlock.fetchAll()
+  MediaBlock.find()
     .then(mediaBlocks => {
       res.status(200).json({ mediaBlocks: mediaBlocks })
     })
@@ -37,8 +37,10 @@ exports.createMediaBlock = (req, res, next) => {
       })
   }
 
-  const mediaBlock = new MediaBlock(req.body.transcript)
-  
+  const mediaBlock = new MediaBlock({
+    transcript: req.body.transcript
+  })
+
   mediaBlock
     .save()
     .then(result => {
@@ -68,10 +70,11 @@ exports.updateMediaBlock = (req, res, next) => {
   const mediaBlockId = req.params.mediaBlockId
   const transcript = req.body.transcript
 
-  const updatedMediaBlock = new MediaBlock(transcript, mediaBlockId)
-
-  updatedMediaBlock
-    .save()
+  MediaBlock.findById(mediaBlockId)
+    .then(mediaBlock => {
+      mediaBlock.transcript = transcript
+      return mediaBlock.save()
+    })
     .then(result => {
       res.status(201).json({
         message: 'Media block updated successfully.',
@@ -87,7 +90,7 @@ exports.updateMediaBlock = (req, res, next) => {
 exports.deleteMediaBlock = (req, res, next) => {
   const mediaBlockId = req.params.mediaBlockId
 
-  MediaBlock.deleteById(mediaBlockId)
+  MediaBlock.findByIdAndRemove(mediaBlockId)
     .then(() => {
       res.status(204).json({
         message: 'Media block deleted successfully.'

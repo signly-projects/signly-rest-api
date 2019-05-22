@@ -1,89 +1,16 @@
-const mongodb = require('mongodb')
+const mongoose = require('mongoose')
 
-const getDb = require('../util/database').getDb
+const Schema = mongoose.Schema
 
-const coll = 'sites'
-class Site {
-  constructor (title, url, id) {
-    this.title = title
-    this.url = url
-    this._id = id ? new mongodb.ObjectId(id) : null
+const siteSchema = new Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  url : {
+    type: String,
+    require: true
   }
+})
 
-  save () {
-    const db = getDb()
-    let dbOp
-
-    if (this._id) {
-      dbOp = db
-        .collection('sites')
-        .updateOne({ _id: this._id }, { $set: this })
-    } else {
-      dbOp = db
-        .collection(coll)
-        .insertOne(this)
-    }
-
-    return dbOp
-      .then(result => {
-        // eslint-disable-next-line no-console
-        console.log(result)
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.log(err)
-      })
-  }
-
-  static fetchAll () {
-    const db = getDb()
-    return db.collection(coll)
-      .find()
-      .toArray()
-      .then(sites => {
-        // eslint-disable-next-line no-console
-        console.log(sites)
-        return sites
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.log(err)
-      })
-  }
-
-  static findById (siteId) {
-    const db = getDb()
-    return db
-      .collection(coll)
-      .find({
-        _id: new mongodb.ObjectId(siteId)
-      })
-      .next()
-      .then(site => {
-        return site
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.log(err)
-      })
-  }
-
-  static deleteById (siteId) {
-    const db = getDb()
-    return db
-      .collection(coll)
-      .deleteOne({
-        _id: new mongodb.ObjectId(siteId)
-      })
-      .then(() => {
-        // eslint-disable-next-line no-console
-        console.log('Site deleted.')
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.log(err)
-      })
-  }
-}
-
-module.exports = Site
+module.exports = mongoose.model('Site', siteSchema)

@@ -1,9 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
 
 require('dotenv').config()
-
-const mongoConnect = require('./util/database').mongoConnect
 
 const pagesRoutes = require('./routes/pages')
 const sitesRoutes = require('./routes/sites')
@@ -24,6 +23,15 @@ app.use('/api', pagesRoutes)
 app.use('/api', sitesRoutes)
 app.use('/api', mediaBlocksRoutes)
 
-mongoConnect(() => {
-  app.listen(process.env.SERVER_PORT)
-})
+mongoose
+  .connect(
+    `mongodb://${process.env.COSMOSDB_ACCOUNT}:${process.env.COSMOSDB_KEY}@${process.env.COSMOSDB_ACCOUNT}.documents.azure.com:${process.env.COSMOSDB_PORT}/${process.env.COSMOSDB_DB}?ssl=true`,
+    { useNewUrlParser: true }
+  )
+  .then(() => {
+    app.listen(process.env.SERVER_PORT)
+  })
+  .catch(err => {
+    // eslint-disable-next-line no-console
+    console.log(err)
+  })

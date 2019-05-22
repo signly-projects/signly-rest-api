@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator/check')
 const Site = require('../models/site')
 
 exports.getSites = (req, res, next) => {
-  Site.fetchAll()
+  Site.find()
     .then(sites => {
       res.status(200).json({ sites: sites })
     })
@@ -37,10 +37,10 @@ exports.createSite = (req, res, next) => {
       })
   }
 
-  const title = req.body.title
-  const url = req.body.url
-
-  const site = new Site(title, url)
+  const site = new Site({
+    title: req.body.title,
+    url: req.body.url
+  })
 
   site
     .save()
@@ -72,10 +72,12 @@ exports.updateSite = (req, res, next) => {
   const title = req.body.title
   const url = req.body.url
 
-  const updatedSite = new Site(title, url, siteId)
-
-  updatedSite
-    .save()
+  Site.findById(siteId)
+    .then(site => {
+      site.title = title
+      site.url = url
+      return site.save()
+    })
     .then(result => {
       res.status(201).json({
         message: 'Site updated successfully.',
@@ -91,7 +93,7 @@ exports.updateSite = (req, res, next) => {
 exports.deleteSite = (req, res, next) => {
   const siteId = req.params.siteId
 
-  Site.deleteById(siteId)
+  Site.findByIdAndRemove(siteId)
     .then(() => {
       res.status(204).json({
         message: 'Site deleted successfully.'
