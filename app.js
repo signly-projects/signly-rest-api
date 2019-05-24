@@ -2,7 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
-require('dotenv').config()
+const config = require('./config')
 
 const pagesRoutes = require('./routes/pages')
 const sitesRoutes = require('./routes/sites')
@@ -33,13 +33,20 @@ app.use((error, req, res, next) => {
   })
 })
 
+const { env, port, database, cosmosdb } = config
+
+let mongoUri = ''
+
+if (env === 'prod' || env === 'stag') {
+  mongoUri = `${database.protocol}://${cosmosdb.account}:${cosmosdb.key}@${database.host}:${database.port}/${database.name}?ssl=true`
+} else {
+  mongoUri = `${database.protocol}://${database.host}:${database.port}/${database.name}`
+}
+
 mongoose
-  .connect(
-    `mongodb://${process.env.COSMOSDB_ACCOUNT}:${process.env.COSMOSDB_KEY}@${process.env.COSMOSDB_ACCOUNT}.documents.azure.com:${process.env.COSMOSDB_PORT}/${process.env.COSMOSDB_DB}?ssl=true`,
-    { useNewUrlParser: true }
-  )
+  .connect(mongoUri, { useNewUrlParser: true })
   .then(() => {
-    app.listen(process.env.SERVER_PORT)
+    app.listen(port)
   })
   .catch(err => {
     // eslint-disable-next-line no-console
