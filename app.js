@@ -3,10 +3,9 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
 const config = require('./config')
+const database = require('./utils/database')
 
 const pagesRoutes = require('./routes/pages')
-const sitesRoutes = require('./routes/sites')
-const mediaBlocksRoutes = require('./routes/media-blocks')
 
 const app = express()
 
@@ -20,8 +19,6 @@ app.use((req, res, next) => {
 })
 
 app.use('/api', pagesRoutes)
-app.use('/api', sitesRoutes)
-app.use('/api', mediaBlocksRoutes)
 
 app.use((error, req, res, next) => {
   const httpStatusCode = error.httpStatusCode || 500
@@ -33,18 +30,13 @@ app.use((error, req, res, next) => {
   })
 })
 
-const { env, port, database, cosmosdb } = config
-
-let mongoUri = ''
-
-if (env === 'prod' || env === 'stag') {
-  mongoUri = `${database.protocol}://${cosmosdb.account}:${cosmosdb.key}@${database.host}:${database.port}/${database.name}?ssl=true`
-} else {
-  mongoUri = `${database.protocol}://${database.host}:${database.port}/${database.name}`
-}
+const port = config
 
 mongoose
-  .connect(mongoUri, { useNewUrlParser: true })
+  .connect(
+    database.mongoUri(),
+    { useNewUrlParser: true }
+  )
   .then(() => {
     app.listen(port)
   })
