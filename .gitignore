@@ -63,7 +63,7 @@ typings/
 /config
 
 # Secrets - Handled by multi-encrypt
-./config/dev-local.json
+./config/dev_local.json
 ./config/dev.json
 ./config/prod.json
 ./config/stag.json
