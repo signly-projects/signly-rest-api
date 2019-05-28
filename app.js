@@ -22,10 +22,9 @@ app.use('/api', pagesRoutes)
 
 app.use((error, req, res, next) => {
   const httpStatusCode = error.httpStatusCode || 500
-  const message = error.message
 
   res.status(httpStatusCode).json({
-    message: message,
+    message: error.message,
     errors: error.details
   })
 })

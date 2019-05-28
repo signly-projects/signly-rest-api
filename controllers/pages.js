@@ -1,5 +1,4 @@
-const { validationResult } = require('express-validator/check')
-const Page = require('../models/page')
+const { Page, validate } = require('../models/page')
 
 exports.getPages = (req, res, next) => {
   Page.find()
@@ -36,47 +35,62 @@ exports.getPage = (req, res, next) => {
 }
 
 exports.createPage = (req, res, next) => {
-  const errors = validationResult(req)
+  const validation = validate(req.body)
 
-  if (!errors.isEmpty()) {
+  if (validation.error) {
     const error = new Error('Page create validation failed. Request data is incorrect.')
     error.httpStatusCode = 422
-    error.details = errors.array()
+    error.details = validation.error.details
     throw error
   }
 
-  const page = new Page({
-    url: req.body.url
-  })
+  const uri = req.body.uri
 
-  page
-    .save()
+  Page.findOne({ uri: uri })
+    .then(page => {
+      page.requested += 1
+
+      page.save()
+    })
     .then(result => {
-      res.status(201).json({
-        message: 'Page created successfully.',
+      res.status(204).json({
+        message: 'Page updated successfully.',
         page: result
       })
     })
-    .catch(err => {
-      if (!err.httpStatusCode) {
-        err.httpStatusCode = 500
-      }
-      next(err)
+    .catch(() => {
+      const page = new Page({
+        uri: uri
+      })
+    
+      page
+        .save()
+        .then(result => {
+          res.status(201).json({
+            message: 'Page created successfully.',
+            page: result
+          })
+        })
+        .catch(err => {
+          if (!err.httpStatusCode) {
+            err.httpStatusCode = 500
+          }
+          next(err)
+        })
     })
+
 }
 
 exports.updatePage = (req, res, next) => {
-  const errors = validationResult(req)
+  const error = validate(req.body)
 
-  if (!errors.isEmpty()) {
-    const error = new Error('Page update validation failed. Request data is incorrect.')
+  if (error) {
     error.httpStatusCode = 422
-    error.details = errors.array()
     throw error
   }
 
   const pageId = req.params.pageId
-  const url = req.body.url
+  const uri = req.body.uri
 
   Page.findById(pageId)
     .then(page => {
@@ -85,8 +99,8 @@ exports.updatePage = (req, res, next) => {
         error.httpStatusCode = 404
         throw error
       }
-      
-      page.url = url
+
+      page.uri = uri
       return page.save()
     })
     .then(result => {

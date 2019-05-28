@@ -1,5 +1,4 @@
 const express = require('express')
-const { body } = require('express-validator/check')
 
 const { getPages, getPage, createPage, updatePage, deletePage } = require('../controllers/pages')
 
@@ -12,24 +11,10 @@ router.get('/pages', getPages)
 router.get('/pages/:pageId', getPage)
 
 // POST /api/pages
-router.post(
-  '/pages',
-  [
-    body('url')
-      .isURL()
-  ],
-  createPage
-)
+router.post('/pages', createPage)
 
 // PUT /api/sites/:pageId
-router.put(
-  '/pages/:pageId', 
-  [
-    body('url')
-      .isURL()
-  ],
-  updatePage
-)
+router.put('/pages/:pageId', updatePage)
 
 // DELETE /api/sites/:pageId
 router.delete('/pages/:pageId', deletePage)
