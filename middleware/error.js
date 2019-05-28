@@ -1,8 +1,10 @@
-module.exports = (error, req, res, next) => {
-  const httpStatusCode = error.httpStatusCode || 500
+const winston = require('winston')
 
-  res.status(httpStatusCode).json({
-    message: error.message,
-    errors: error.details
+module.exports = (err, req, res, next) => {
+  winston.error(err.message, err)
+
+  res.status(500).json({
+    message: err.message,
+    errors: err.details
   })
 }
