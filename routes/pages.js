@@ -5,18 +5,18 @@ const { getPages, getPage, createPage, updatePage, deletePage } = require('../co
 const router = express.Router()
 
 // GET /api/pages
-router.get('/pages', getPages)
+router.get('/', getPages)
 
 // GET /api/pages/:pageId
-router.get('/pages/:pageId', getPage)
+router.get('/:pageId', getPage)
 
 // POST /api/pages
-router.post('/pages', createPage)
+router.post('/', createPage)
 
 // PUT /api/sites/:pageId
-router.put('/pages/:pageId', updatePage)
+router.put('/:pageId', updatePage)
 
 // DELETE /api/sites/:pageId
-router.delete('/pages/:pageId', deletePage)
+router.delete('/:pageId', deletePage)
 
 module.exports = router

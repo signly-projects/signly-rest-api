@@ -1,45 +1,14 @@
+require('express-async-errors')
 const express = require('express')
-const bodyParser = require('body-parser')
-const mongoose = require('mongoose')
-
 const config = require('./config')
-const database = require('./utils/database')
-
-const pagesRoutes = require('./routes/pages')
 
 const app = express()
 
-app.use(bodyParser.json())
+require('./startup/routes')(app)
+require('./startup/database')()
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  next()
-})
+const { port } = config
 
-app.use('/api', pagesRoutes)
+const server = app.listen(port, () => console.log(`Listening on port ${port}...`))
 
-app.use((error, req, res, next) => {
-  const httpStatusCode = error.httpStatusCode || 500
-
-  res.status(httpStatusCode).json({
-    message: error.message,
-    errors: error.details
-  })
-})
-
-const port = config
-
-mongoose
-  .connect(
-    database.mongoUri(),
-    { useNewUrlParser: true }
-  )
-  .then(() => {
-    app.listen(port)
-  })
-  .catch(err => {
-    // eslint-disable-next-line no-console
-    console.log(err)
-  })
+module.exports = server

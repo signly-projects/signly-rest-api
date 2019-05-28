@@ -1,144 +1,71 @@
 const { Page, validate } = require('../models/page')
 
-exports.getPages = (req, res, next) => {
-  Page.find()
-    .then(pages => {
-      res.status(200).json({ pages: pages })
-    })
-    .catch(err => {
-      if (!err.httpStatusCode) {
-        err.httpStatusCode = 500
-      }
-      next(err)
-    })
+exports.getPages = async (req, res, next) => {
+  const pages = await Page.find().sort('requested')
+
+  res.status(200).send(pages)
 }
 
-exports.getPage = (req, res, next) => {
-  const pageId = req.params.pageId
+exports.getPage = async (req, res, next) => {
+  const page = await Page.findById(req.params.pageId)
 
-  Page.findById(pageId)
-    .then(page => {
-      if (!page) {
-        const error = new Error('Page not found.')
-        error.httpStatusCode = 404
-        throw error
-      }
-
-      res.status(200).json({ page: page })
-    })
-    .catch(err => {
-      if (!err.httpStatusCode) {
-        err.httpStatusCode = 500
-      }
-      next(err)
-    })
-}
-
-exports.createPage = (req, res, next) => {
-  const validation = validate(req.body)
-
-  if (validation.error) {
-    const error = new Error('Page create validation failed. Request data is incorrect.')
-    error.httpStatusCode = 422
-    error.details = validation.error.details
-    throw error
+  if (!page) {
+    return res.status(404).send('Page with the given ID not found.')
   }
 
-  const uri = req.body.uri
-
-  Page.findOne({ uri: uri })
-    .then(page => {
-      page.requested += 1
-
-      page.save()
-    })
-    .then(result => {
-      res.status(204).json({
-        message: 'Page updated successfully.',
-        page: result
-      })
-    })
-    .catch(() => {
-      const page = new Page({
-        uri: uri
-      })
-    
-      page
-        .save()
-        .then(result => {
-          res.status(201).json({
-            message: 'Page created successfully.',
-            page: result
-          })
-        })
-        .catch(err => {
-          if (!err.httpStatusCode) {
-            err.httpStatusCode = 500
-          }
-          next(err)
-        })
-    })
-
+  res.status(200).send(page)
 }
 
-exports.updatePage = (req, res, next) => {
-  const error = validate(req.body)
+exports.createPage = async (req, res, next) => {
+  const { error } = validate(req.body)
 
   if (error) {
-    error.httpStatusCode = 422
-    throw error
+    return res.status(422).send(error.details[0].message)
   }
 
-  const pageId = req.params.pageId
   const uri = req.body.uri
 
-  Page.findById(pageId)
-    .then(page => {
-      if (!page) {
-        const error = new Error('Page not found.')
-        error.httpStatusCode = 404
-        throw error
-      }
+  let page = await Page.findOne({ uri: uri })
 
-      page.uri = uri
-      return page.save()
+  if (!page) {
+    page = new Page({
+      uri: uri
     })
-    .then(result => {
-      res.status(204).json({
-        message: 'Page updated successfully.',
-        page: result
-      })
-    })
-    .catch(err => {
-      if (!err.httpStatusCode) {
-        err.httpStatusCode = 500
-      }
-      next(err)
-    })
+
+    page = await page.save()
+    return res.status(201).send(page)
+  }
+
+  page.requested += 1
+
+  page = await page.save()
+  res.status(204).send(page)
 }
 
-exports.deletePage = (req, res, next) => {
+exports.updatePage = async (req, res, next) => {
+  const { error } = validate(req.body)
+
+  if (error) {
+    return res.status(422).send(error.details[0].message)
+  }
+
+  let page = await Page.findByIdAndUpdate(req.params.pageId, { uri: req.body.uri } )
+
+  if (!page) {
+    return res.status(404).send('Page with the given ID not found.')
+  }
+
+  res.status(204).send(page)
+}
+
+exports.deletePage = async (req, res, next) => {
   const pageId = req.params.pageId
 
-  Page.findById(pageId)
-    .then(page => {
-      if (!page) {
-        const error = new Error('Page not found.')
-        error.httpStatusCode = 404
-        throw error
-      }
+  const page = await Page.findByIdAndDelete(pageId)
 
-      return Page.findByIdAndDelete(pageId)
-    })
-    .then(() => {
-      res.status(200).json({
-        message: 'Page deleted successfully.'
-      })
-    })
-    .catch(err => {
-      if (!err.httpStatusCode) {
-        err.httpStatusCode = 500
-      }
-      next(err)
-    })
+  if (!page) {
+    return res.status(404).send('Page with the given ID not found.')
+  }
+
+  res.status(204).send(page)
 }
