@@ -60,9 +60,11 @@ typings/
 # next.js build output
 .next
 
+/config
+
 # Secrets - Handled by multi-encrypt
-/config/dev-local.json
-/config/dev.json
-/config/prod.json
-/config/stag.json
-/config/test.json
+./config/dev-local.json
+./config/dev.json
+./config/prod.json
+./config/stag.json
+./config/test.json
