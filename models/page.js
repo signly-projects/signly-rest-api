@@ -1,7 +1,10 @@
 const Joi = require('joi')
 const mongoose = require('mongoose')
 
-const Page = mongoose.model('Page', new mongoose.Schema(
+const { SiteSchema } = require('./site')
+const { MediaBlockSchema } = require('./media-block')
+
+const PageSchema = new mongoose.Schema(
   {
     uri: {
       type: String,
@@ -14,19 +17,25 @@ const Page = mongoose.model('Page', new mongoose.Schema(
     requested: {
       type: Number,
       default: 1
-    }
+    },
+    site: SiteSchema,
+    mediaBlocks: [MediaBlockSchema],
   },
   {
     timestamps: true
   }
-))
+)
+
+const Page = mongoose.model('Page', PageSchema)
 
 function validatePage (page) {
   const schema = {
-    uri: Joi.string().uri().required()
+    uri: Joi.string().uri().required(),
+    // siteId: Joi.objectId().required()
   }
   return Joi.validate(page, schema)
 }
 
+exports.PageSchema = PageSchema
 exports.Page = Page
 exports.validate = validatePage

@@ -7,6 +7,7 @@ const app = express()
 require('./startup/logging')()
 require('./startup/routes')(app)
 require('./startup/database')()
+require('./startup/validation')()
 
 const { port } = config
 
