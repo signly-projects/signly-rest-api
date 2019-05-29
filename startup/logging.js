@@ -1,19 +1,21 @@
 require('express-async-errors')
 const winston = require('winston')
+const { format } = require('winston')
 const config = require('../config')
 
 module.exports = function () {
   const logger = winston.createLogger({
-    transports: [
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.prettyPrint(),
-          winston.format.colorize()
-        )
-      })
-    ],
+    level: 'info',
+    format: format.combine(
+      format.colorize(),
+      format.timestamp(),
+      format.prettyPrint(),
+      format.splat(),
+      format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`)
+    ),
     exceptionHandlers: [
-      new winston.transports.File({ filename: 'logs/uncaught-exceptions.log' })
+      new winston.transports.Console(),
+      new winston.transports.File({ filename: 'logs/uncaught-exceptions.log' }),
     ]
   })
 
@@ -23,5 +25,7 @@ module.exports = function () {
 
   const { env } = config
 
-  logger.add(new winston.transports.File({ filename: `logs/${env}.log` }))
+  logger.add(new winston.transports.File({
+    filename: `logs/${env}.log`
+  }))
 }
