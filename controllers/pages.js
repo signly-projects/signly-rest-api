@@ -7,7 +7,7 @@ exports.getPages = async (req, res, next) => {
 }
 
 exports.getPage = async (req, res, next) => {
-  const page = await Page.findById(req.params.pageId)
+  const page = await Page.findById(req.params.id)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
@@ -49,19 +49,19 @@ exports.updatePage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findByIdAndUpdate(req.params.pageId, { uri: req.body.uri } )
+  let page = await Page.findByIdAndUpdate(req.params.id, { uri: req.body.uri } )
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
   }
 
-  res.status(204).send(page)
+  res.status(200).send(page)
 }
 
 exports.deletePage = async (req, res, next) => {
-  const pageId = req.params.pageId
+  const id = req.params.id
 
-  const page = await Page.findByIdAndDelete(pageId)
+  const page = await Page.findByIdAndDelete(id)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')

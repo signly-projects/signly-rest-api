@@ -8,7 +8,7 @@ const PageSchema = new mongoose.Schema(
   {
     uri: {
       type: String,
-      require: true
+      required: true
     },
     enabled: {
       type: Boolean,

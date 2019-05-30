@@ -4,7 +4,7 @@ const { format } = require('winston')
 const config = require('../config')
 
 module.exports = function () {
-  const logger = winston.createLogger({
+  winston.createLogger({
     level: 'info',
     format: format.combine(
       format.colorize(),
@@ -25,7 +25,15 @@ module.exports = function () {
 
   const { env } = config
 
-  logger.add(new winston.transports.File({
-    filename: `logs/${env}.log`
+  winston.add(new winston.transports.File({
+    filename: `logs/${env}.log`,
+    level: 'info',
+    format: format.combine(
+      format.colorize(),
+      format.timestamp(),
+      format.prettyPrint(),
+      format.splat(),
+      format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`)
+    ),
   }))
 }

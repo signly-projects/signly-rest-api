@@ -5,7 +5,7 @@ const MediaBlockSchema = new mongoose.Schema(
   {
     transcript: {
       type: String,
-      require: true
+      required: true
     },
     bslScript: {
       type: String

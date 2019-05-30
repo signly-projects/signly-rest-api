@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const winston = require('winston')
 const config = require('../config')
 
 module.exports = function () {
@@ -13,16 +14,6 @@ module.exports = function () {
   }
 
   mongoose
-    .connect(
-      mongoUri,
-      { useNewUrlParser: true }
-    )
-    .then(() => {
-      // eslint-disable-next-line no-console
-      console.log(`Connected to ${mongoUri}...`)
-    })
-    .catch(err => {
-      // eslint-disable-next-line no-console
-      console.log(err)
-    })
+    .connect(mongoUri, { useNewUrlParser: true, useFindAndModify: false })
+    .then(() => winston.info(`Connected to ${mongoUri}...`))
 }

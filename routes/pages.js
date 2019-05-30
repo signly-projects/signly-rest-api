@@ -1,5 +1,5 @@
 const express = require('express')
-
+const validateObjectId = require('../middleware/validateObjectId')
 const { getPages, getPage, createPage, updatePage, deletePage } = require('../controllers/pages')
 
 const router = express.Router()
@@ -8,15 +8,15 @@ const router = express.Router()
 router.get('/', getPages)
 
 // GET /api/pages/:pageId
-router.get('/:pageId', getPage)
+router.get('/:id', validateObjectId, getPage)
 
 // POST /api/pages
 router.post('/', createPage)
 
-// PUT /api/sites/:pageId
-router.put('/:pageId', updatePage)
+// PUT /api/pages/:pageId
+router.put('/:id', validateObjectId, updatePage)
 
-// DELETE /api/sites/:pageId
-router.delete('/:pageId', deletePage)
+// DELETE /api/pages/:pageId
+router.delete('/:id', validateObjectId, deletePage)
 
 module.exports = router
