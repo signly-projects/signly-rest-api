@@ -1,7 +1,7 @@
 const { Page, validate } = require('../models/page')
 
 exports.getPages = async (req, res, next) => {
-  const pages = await Page.find().sort('requested')
+  const pages = await Page.find().sort({ requested: 'desc' })
 
   res.status(200).send(pages)
 }
@@ -23,13 +23,11 @@ exports.createPage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  const uri = req.body.uri
-
-  let page = await Page.findOne({ uri: uri })
+  let page = await Page.findOne({ uri: req.body.uri })
 
   if (!page) {
     page = new Page({
-      uri: uri
+      uri: req.body.uri
     })
 
     page = await page.save()
@@ -39,7 +37,7 @@ exports.createPage = async (req, res, next) => {
   page.requested += 1
 
   page = await page.save()
-  res.status(204).send(page)
+  res.status(200).send(page)
 }
 
 exports.updatePage = async (req, res, next) => {
@@ -49,7 +47,11 @@ exports.updatePage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findByIdAndUpdate(req.params.id, { uri: req.body.uri } )
+  let page = await Page.findByIdAndUpdate(
+    req.params.id,
+    { uri: req.body.uri },
+    { new: true }
+  )
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
@@ -67,5 +69,5 @@ exports.deletePage = async (req, res, next) => {
     return res.status(404).send('Page with the given ID not found.')
   }
 
-  res.status(204).send(page)
+  res.status(200).send(page)
 }

@@ -112,4 +112,4 @@
 
 ### In Ubuntu you might get an error running jest tests in watch mode. Run the following command to solve the issue
 
-`echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -`
+`echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`

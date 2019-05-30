@@ -8,8 +8,8 @@
     "start:dev": "nodemon app.js",
     "enc-config": "multi-encrypt enc",
     "dec-config": "multi-encrypt dec",
-    "test": "jest",
-    "test:watch": "jest --watchAll --verbose"
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watchAll --verbose --detectOpenHandles"
   },
   "repository": {
     "type": "git",
