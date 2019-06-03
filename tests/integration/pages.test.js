@@ -29,9 +29,9 @@ describe('/api/pages', () => {
       const res = await request(server).get('/api/pages')
 
       expect(res.status).toBe(200)
-      expect(res.body.length).toBe(2)
-      expect(res.body.some(p => p.uri === lloydsUri )).toBeTruthy()
-      expect(res.body.some(p => p.uri === monzoUri )).toBeTruthy()
+      expect(res.body.pages.length).toBe(2)
+      expect(res.body.pages.some(p => p.uri === lloydsUri )).toBeTruthy()
+      expect(res.body.pages.some(p => p.uri === monzoUri )).toBeTruthy()
     })
   })
 
@@ -43,7 +43,7 @@ describe('/api/pages', () => {
       const res = await request(server).get('/api/pages/' + page._id)
 
       expect(res.status).toBe(200)
-      expect(res.body).toHaveProperty('uri', page.uri)
+      expect(res.body.page).toHaveProperty('uri', page.uri)
     })
 
     it('should return 404 if invalid id is passed', async () => {
@@ -65,7 +65,7 @@ describe('/api/pages', () => {
     const exec = async () => {
       return await request(server)
         .post('/api/pages')
-        .send({ uri: uri })
+        .send({ page: { uri: uri }})
     }
 
     beforeEach(() => {
@@ -92,18 +92,18 @@ describe('/api/pages', () => {
       const res = await exec()
 
       expect(res.status).toBe(201)
-      expect(res.body).toHaveProperty('_id')
-      expect(res.body).toHaveProperty('uri', lloydsUri)
-      expect(res.body).toHaveProperty('requested', 1)
+      expect(res.body.page).toHaveProperty('_id')
+      expect(res.body.page).toHaveProperty('uri', lloydsUri)
+      expect(res.body.page).toHaveProperty('requested', 1)
     })
 
     it('should increment the requested property if the page with same uri exists', async () => {
       const res1 = await exec()
-      const pageRequested = res1.body.requested
+      const pageRequested = res1.body.page.requested
       const res2 = await exec()
 
       expect(res2.status).toBe(200)
-      expect(res2.body).toHaveProperty('requested', pageRequested + 1)
+      expect(res2.body.page).toHaveProperty('requested', pageRequested + 1)
     })
   })
 
@@ -115,7 +115,7 @@ describe('/api/pages', () => {
     const exec = async () => {
       return await request(server)
         .put('/api/pages/' + id)
-        .send({ uri: newUri })
+        .send({ page: { uri: newUri }})
     }
 
     beforeEach(async () => {
@@ -161,8 +161,8 @@ describe('/api/pages', () => {
     it('should return the updated page if it is valid', async () => {
       const res = await exec()
 
-      expect(res.body).toHaveProperty('_id')
-      expect(res.body).toHaveProperty('uri', newUri)
+      expect(res.body.page).toHaveProperty('_id')
+      expect(res.body.page).toHaveProperty('uri', newUri)
     })
   })
 
@@ -210,8 +210,8 @@ describe('/api/pages', () => {
     it('should return the removed page', async () => {
       const res = await exec()
 
-      expect(res.body).toHaveProperty('_id', page._id.toHexString())
-      expect(res.body).toHaveProperty('uri', page.uri)
+      expect(res.body.page).toHaveProperty('_id', page._id.toHexString())
+      expect(res.body.page).toHaveProperty('uri', page.uri)
     })
   })
 })
