@@ -1,3 +1,4 @@
+const uuid = require('uuid-1345')
 const { Page, validate } = require('../models/page')
 
 exports.getPages = async (req, res, next) => {
@@ -7,7 +8,11 @@ exports.getPages = async (req, res, next) => {
 }
 
 exports.getPage = async (req, res, next) => {
-  const page = await Page.findById(req.params.id)
+  const page = await Page.findOne({
+    $or: [
+      { _id: req.params.id },
+      { uuid: req.params.id },
+    ]})
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
@@ -23,11 +28,22 @@ exports.createPage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findOne({ uri: req.body.page.uri })
+  let page = await Page.findOne({
+    $or: [
+      { uri: req.body.page.uri },
+      { uuid: req.body.page.uri },
+    ]
+  })
 
   if (!page) {
+    const opt = {
+      namespace: uuid.namespace.url,
+      name: req.body.page.uri
+    }
+
     page = new Page({
-      uri: req.body.page.uri
+      uri: req.body.page.uri,
+      uuid: uuid.v3(opt)
     })
 
     page = await page.save()
@@ -47,8 +63,12 @@ exports.updatePage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findByIdAndUpdate(
-    req.params.id,
+  let page = await Page.findOneAndUpdate(
+    { $or: [
+      { _id: req.params.id },
+      { uuid: req.params.id }
+    ]}
+    ,
     { uri: req.body.page.uri },
     { new: true }
   )

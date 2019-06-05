@@ -1,11 +1,22 @@
 const request = require('supertest')
 const mongoose = require('mongoose')
+const uuid = require('uuid-1345')
 const { Page } = require('../../models/page')
 
 let server
 
 const lloydsUri = 'https://www.lloydsbank.com/current-accounts.asp'
 const monzoUri = 'https://monzo.com/help/'
+
+const optLloyds = {
+  namespace: uuid.namespace.url,
+  name: lloydsUri
+}
+
+const optMonzo = {
+  namespace: uuid.namespace.url,
+  name: monzoUri
+}
 
 describe('/api/pages', () => {
   beforeEach(() => {
@@ -20,8 +31,8 @@ describe('/api/pages', () => {
   describe('GET /', () => {
     it('should return all pages', async () => {
       const pages = [
-        { uri: lloydsUri },
-        { uri: monzoUri }
+        { uri: lloydsUri, uuid: uuid.v3(optLloyds) },
+        { uri: monzoUri, uuid: uuid.v3(optMonzo) }
       ]
 
       await Page.collection.insertMany(pages)
@@ -37,7 +48,7 @@ describe('/api/pages', () => {
 
   describe('GET /:id', () => {
     it('should return a page if valid id is passed', async () => {
-      const page = new Page({ uri: lloydsUri })
+      const page = new Page({ uri: lloydsUri, uuid: uuid.v3(optLloyds) })
       await page.save()
 
       const res = await request(server).get('/api/pages/' + page._id)
