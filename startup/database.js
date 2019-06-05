@@ -1,16 +1,22 @@
+require('dotenv').config()
 const mongoose = require('mongoose')
 const winston = require('winston')
-const config = require('../config')
 
 module.exports = function () {
-  const { env, database, cosmosdb } = config
+  const env = process.env.NODE_ENV
+  const databaseName = process.env.DATABASE_NAME
+  const databaseProtocol = process.env.DATABASE_PROTOCOL
+  const databasePort = process.env.DATABASE_PORT
+  const databaseHost = process.env.DATABASE_HOST
+  const cosmosdbAccount = process.env.COSMOSDB_ACCOUNT
+  const cosmosdbKey = process.env.COSMOSDB_KEY
 
   let mongoUri
 
   if (env === 'prod' || env === 'stag' || env === 'dev') {
-    mongoUri = `${database.protocol}://${cosmosdb.account}:${cosmosdb.key}@${database.host}:${database.port}/${database.name}?ssl=true`
+    mongoUri = `${databaseProtocol}://${cosmosdbAccount}:${cosmosdbKey}@${databaseHost}:${databasePort}/${databaseName}?ssl=true`
   } else {
-    mongoUri = `${database.protocol}://${database.host}:${database.port}/${database.name}`
+    mongoUri = `${databaseProtocol}://${databaseHost}:${databasePort}/${databaseName}`
   }
 
   mongoose

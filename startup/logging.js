@@ -1,7 +1,7 @@
+require('dotenv').config()
 require('express-async-errors')
 const winston = require('winston')
 const { format } = require('winston')
-const config = require('../config')
 
 module.exports = function () {
   winston.createLogger({
@@ -23,7 +23,7 @@ module.exports = function () {
     throw exception
   })
 
-  const { env } = config
+  const env = process.env.NODE_ENV
 
   winston.add(new winston.transports.File({
     filename: `logs/${env}.log`,
