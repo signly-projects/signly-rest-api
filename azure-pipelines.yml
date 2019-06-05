@@ -13,11 +13,11 @@ steps:
 
 - script: |
     yarn install
-    displayName: 'yarn install'
+  displayName: 'yarn install'
 
 - script: |
     yarn test
-    displayName: 'yarn test'
+  displayName: 'yarn test'
 
 - task: ArchiveFiles@2
   displayName: 'Archive files'
