@@ -6,9 +6,6 @@ const { MediaBlockSchema } = require('./media-block')
 
 const PageSchema = new mongoose.Schema(
   {
-    uuid: {
-      type: String
-    },
     uri: {
       type: String,
       required: true
@@ -34,10 +31,7 @@ const Page = mongoose.model('Page', PageSchema)
 function validatePage (page) {
   const schema = {
     uri: Joi.string().uri().required(),
-    uuid: Joi.string().uuid(),
-    enabled: Joi.boolean(),
-    requested: Joi.number(),
-    site: Joi.objectId()
+    // siteId: Joi.objectId().required()
   }
   return Joi.validate(page, schema)
 }

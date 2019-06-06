@@ -28,7 +28,6 @@
     "mongodb": "^3.2.4",
     "mongoose": "^5.5.10",
     "multi-encrypt": "^1.0.4",
-    "uuid-1345": "^0.99.7",
     "winston": "^3.2.1"
   },
   "devDependencies": {
