@@ -4,12 +4,13 @@ const winston = require('winston')
 
 module.exports = function () {
   const env = process.env.NODE_ENV
-  const databaseName = process.env.DATABASE_NAME
   const databaseProtocol = process.env.DATABASE_PROTOCOL
+  const databaseName = `${process.env.DATABASE_NAME}_${env}`
   const databasePort = process.env.DATABASE_PORT
   const databaseHost = process.env.DATABASE_HOST
   const cosmosdbAccount = process.env.COSMOSDB_ACCOUNT
   const cosmosdbKey = process.env.COSMOSDB_KEY
+
 
   let mongoUri
 

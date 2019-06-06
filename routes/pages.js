@@ -1,11 +1,15 @@
 const express = require('express')
 const validateObjectId = require('../middleware/validateObjectId')
-const { getPages, getPage, createPage, updatePage, deletePage } = require('../controllers/pages')
+const validateUri = require('../middleware/validateUri')
+const { getPages, getPage, getPageByUri, createPage, updatePage, deletePage } = require('../controllers/pages')
 
 const router = express.Router()
 
 // GET /api/pages
 router.get('/', getPages)
+
+// GET /api/pages/search
+router.get('/search/:uri', validateUri, getPageByUri)
 
 // GET /api/pages/:pageId
 router.get('/:id', validateObjectId, getPage)
