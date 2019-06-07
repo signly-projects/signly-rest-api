@@ -7,8 +7,7 @@ exports.getPages = async (req, res, next) => {
 }
 
 exports.getPageByUri = async (req, res, next) => {
-  const pageUri = decodeURIComponent(req.params.uri)
-  const page = await Page.findOne({ uri: pageUri })
+  const page = await Page.findOne({ uri: req.params.uri })
 
   if (!page) {
     return res.status(404).send('Page with the given URI not found.')
