@@ -31,7 +31,10 @@ const Page = mongoose.model('Page', PageSchema)
 function validatePage (page) {
   const schema = {
     uri: Joi.string().uri().required(),
-    // siteId: Joi.objectId().required()
+    enabled: Joi.boolean(),
+    requested: Joi.number(),
+    site: Joi.objectId(),
+    mediaBlocks: Joi.array(),
   }
   return Joi.validate(page, schema)
 }
