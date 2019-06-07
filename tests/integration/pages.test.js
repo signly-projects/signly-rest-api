@@ -120,6 +120,7 @@ describe('/api/pages', () => {
       expect(res.body.page).toHaveProperty('_id')
       expect(res.body.page).toHaveProperty('uri', lloydsUri)
       expect(res.body.page).toHaveProperty('requested', 1)
+      expect(res.body.page).toHaveProperty('enabled', false)
     })
 
     it('should increment the requested property if the page with same uri exists', async () => {
@@ -140,7 +141,7 @@ describe('/api/pages', () => {
     const exec = async () => {
       return await request(server)
         .put('/api/pages/' + id)
-        .send({ page: { uri: newUri }})
+        .send({ page: { uri: newUri, enabled: true }})
     }
 
     beforeEach(async () => {
@@ -188,6 +189,7 @@ describe('/api/pages', () => {
 
       expect(res.body.page).toHaveProperty('_id')
       expect(res.body.page).toHaveProperty('uri', newUri)
+      expect(res.body.page).toHaveProperty('enabled', true)
     })
   })
 

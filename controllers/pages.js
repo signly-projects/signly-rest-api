@@ -57,16 +57,16 @@ exports.updatePage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findByIdAndUpdate(
-    req.params.id,
-    { uri: req.body.page.uri, enabled: req.body.page.enabled },
-    { new: true }
-  )
+  let page = await Page.findById(req.params.id)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
   }
 
+  page.uri = req.body.page.uri || page.uri
+  page.enabled = req.body.page.enabled || page.enabled
+
+  page = await page.save()
   res.status(200).send({ page: page })
 }
 
