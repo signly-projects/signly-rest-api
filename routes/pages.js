@@ -9,7 +9,7 @@ const router = express.Router()
 router.get('/', getPages)
 
 // GET /api/pages/search
-router.get('/search/:uri', validateUri, getPageByUri)
+router.get('/search', validateUri, getPageByUri)
 
 // GET /api/pages/:pageId
 router.get('/:id', validateObjectId, getPage)

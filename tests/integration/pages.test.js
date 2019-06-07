@@ -64,7 +64,7 @@ describe('/api/pages', () => {
       const page = new Page({ uri: lloydsUri })
       await page.save()
 
-      const res = await request(server).get('/api/pages/search/' + encodeURIComponent(page.uri))
+      const res = await request(server).get('/api/pages/search?uri=' + encodeURIComponent(page.uri))
 
       expect(res.status).toBe(200)
       expect(res.body.page).toHaveProperty('uri', page.uri)
@@ -72,13 +72,13 @@ describe('/api/pages', () => {
 
     it('should return 404 if invalid URI is passed', async () => {
       const uri = 'not.a.valid.uri'
-      const res = await request(server).get('/api/pages/search/' + encodeURIComponent(uri))
+      const res = await request(server).get('/api/pages/search?uri=' + encodeURIComponent(uri))
       expect(res.status).toBe(404)
     })
 
     it('should return 404 if no page with the given id exists', async () => {
       const randomUri = 'https://yada.com'
-      const res = await request(server).get('/api/pages/search/' + randomUri)
+      const res = await request(server).get('/api/pages/search?uri=' + randomUri)
 
       expect(res.status).toBe(404)
     })
