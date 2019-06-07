@@ -59,7 +59,7 @@ exports.updatePage = async (req, res, next) => {
 
   let page = await Page.findByIdAndUpdate(
     req.params.id,
-    { uri: req.body.page.uri },
+    { uri: req.body.page.uri, enabled: req.body.page.enabled },
     { new: true }
   )
 
