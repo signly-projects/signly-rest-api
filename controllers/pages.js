@@ -64,7 +64,7 @@ exports.updatePage = async (req, res, next) => {
   }
 
   page.uri = req.body.page.uri || page.uri
-  page.enabled = req.body.page.enabled || page.enabled
+  page.enabled = req.body.page.hasOwnProperty('enabled') ? req.body.page.enabled : page.enabled
 
   page = await page.save()
   res.status(200).send({ page: page })
