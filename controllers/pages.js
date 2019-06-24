@@ -56,8 +56,8 @@ exports.createPage = async (req, res, next) => {
         })
 
         mediaBlock = await mediaBlock.save()
-        mediaBlocks.push(mediaBlock._id)
       }
+      mediaBlocks.push(mediaBlock._id)
     }))
   }
 

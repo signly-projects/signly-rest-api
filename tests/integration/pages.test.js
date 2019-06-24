@@ -9,6 +9,11 @@ const lloydsUri = 'https://www.lloydsbank.com/current-accounts.asp'
 const monzoUri = 'https://monzo.com/help/'
 const rawTextOne = 'Chuck Norris doesn\'t read books. He stares them down until he gets the information he wants.'
 const rawTextTwo = 'There is no theory of evolution, just a list of creatures Chuck Norris allows to live.'
+const rawTextThree = 'Time waits for no man. Unless that man is Chuck Norris.'
+const defaultMediaBlocks = [
+  { rawText: rawTextOne },
+  { rawText: rawTextTwo }
+]
 
 describe('/api/pages', () => {
   beforeEach(() => {
@@ -61,7 +66,7 @@ describe('/api/pages', () => {
       expect(res.status).toBe(404)
     })
 
-    it('should return a page with media blocks if valid media blocks are passed', async () => {
+    it('should return a page with media blocks if they exisat', async () => {
       const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
       const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
 
@@ -108,19 +113,49 @@ describe('/api/pages', () => {
 
       expect(res.status).toBe(404)
     })
+
+    it('should return a page with media blocks if they exisat', async () => {
+      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
+      const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
+
+      await mediaBlockOne.save()
+      await mediaBlockTwo.save()
+
+      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id, mediaBlockTwo._id] })
+      await page.save()
+
+      const res = await request(server).get('/api/pages/search?uri=' + encodeURIComponent(page.uri))
+
+      expect(res.status).toBe(200)
+      expect(res.body.page).toHaveProperty('uri', page.uri)
+      expect(res.body.page.mediaBlocks).toHaveLength(2)
+      expect(res.body.page.mediaBlocks).toEqual(
+        [
+          expect.objectContaining({ rawText: rawTextOne }),
+          expect.objectContaining({ rawText: rawTextTwo })
+        ]
+      )
+    })
   })
 
   describe('POST /', () => {
     let uri
+    let mediaBlocks
 
     const exec = async () => {
       return await request(server)
         .post('/api/pages')
-        .send({ page: { uri: uri }})
+        .send({
+          page: {
+            uri: uri,
+            mediaBlocks: mediaBlocks
+          }
+        })
     }
 
-    beforeEach(() => {
+    beforeEach(async () => {
       uri = lloydsUri
+      mediaBlocks = defaultMediaBlocks
     })
 
     it('should return 422 if page uri is not valid', async () => {
@@ -156,6 +191,73 @@ describe('/api/pages', () => {
 
       expect(res2.status).toBe(200)
       expect(res2.body.page).toHaveProperty('requested', pageRequested + 1)
+    })
+
+    it('should return the created page with media blocks if row text is sent', async () => {
+      const res = await exec()
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(res.status).toBe(201)
+      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.any(String),
+          expect.any(String)
+        ]
+      )
+    })
+
+    it('should return the existing page with media blocks if row text is sent', async () => {
+      const page = new Page({ uri: lloydsUri })
+      await page.save()
+
+      const res = await exec()
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(res.status).toBe(200)
+      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.any(String),
+          expect.any(String)
+        ]
+      )
+    })
+
+    it('should return a 422 if media blocks raw text is no included in media blocks array', async () => {
+      mediaBlocks = { randomKey: rawTextOne }
+
+      const res = await exec()
+
+      expect(res.status).toBe(422)
+    })
+
+    it('should append media blocks if page exists', async () => {
+      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
+      const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
+
+      await mediaBlockOne.save()
+      await mediaBlockTwo.save()
+
+      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id, mediaBlockTwo._id] })
+      await page.save()
+
+      mediaBlocks = [{ rawText: rawTextThree }]
+
+      const res = await exec()
+
+      expect(res.status).toBe(200)
+
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(reqMediaBlocks).toHaveLength(3)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.stringMatching(mediaBlockOne.id),
+          expect.stringMatching(mediaBlockTwo.id),
+          expect.any(String)
+        ]
+      )
     })
   })
 
