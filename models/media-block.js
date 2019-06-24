@@ -3,9 +3,12 @@ const mongoose = require('mongoose')
 
 const MediaBlockSchema = new mongoose.Schema(
   {
-    transcript: {
+    rawText: {
       type: String,
       required: true
+    },
+    transcript: {
+      type: String
     },
     bslScript: {
       type: String
@@ -23,14 +26,15 @@ const MediaBlock = mongoose.model('MediaBlock', MediaBlockSchema)
 
 function validateMediaBlock (mediaBlock) {
   const schema = {
-    transcript: Joi.string().required(),
-    bslScript: Joi.string().required(),
-    videoUri: Joi.string().uri().required()
+    rawText: Joi.string().required(),
+    transcript: Joi.string(),
+    bslScript: Joi.string(),
+    videoUri: Joi.string().uri()
   }
 
   return Joi.validate(mediaBlock, schema)
 }
 
-module.exports.MediaBlockSchema = MediaBlockSchema
-module.exports.MediaBlock = MediaBlock
-module.exports.validateMediaBlock = validateMediaBlock
+exports.MediaBlockSchema = MediaBlockSchema
+exports.MediaBlock = MediaBlock
+exports.validateMediaBlock = validateMediaBlock

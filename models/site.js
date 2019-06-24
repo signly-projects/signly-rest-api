@@ -26,6 +26,6 @@ function validateSite (site) {
   return Joi.validate(site, schema)
 }
 
-module.exports.SiteSchema = SiteSchema
-module.exports.Site = Site
-module.exports.validateSite = validateSite
+exports.SiteSchema = SiteSchema
+exports.Site = Site
+exports.validateSite = validateSite

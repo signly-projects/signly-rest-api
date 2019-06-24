@@ -19,7 +19,7 @@ const PageSchema = new mongoose.Schema(
       default: 1
     },
     site: SiteSchema,
-    mediaBlocks: [MediaBlockSchema],
+    mediaBlocks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MediaBlock' }],
   },
   {
     timestamps: true
@@ -41,4 +41,4 @@ function validatePage (page) {
 
 exports.PageSchema = PageSchema
 exports.Page = Page
-exports.validate = validatePage
+exports.validatePage = validatePage

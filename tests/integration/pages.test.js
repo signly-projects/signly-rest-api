@@ -1,11 +1,14 @@
 const request = require('supertest')
 const mongoose = require('mongoose')
 const { Page } = require('../../models/page')
+const { MediaBlock } = require('../../models/media-block')
 
 let server
 
 const lloydsUri = 'https://www.lloydsbank.com/current-accounts.asp'
 const monzoUri = 'https://monzo.com/help/'
+const rawTextOne = 'Chuck Norris doesn\'t read books. He stares them down until he gets the information he wants.'
+const rawTextTwo = 'There is no theory of evolution, just a list of creatures Chuck Norris allows to live.'
 
 describe('/api/pages', () => {
   beforeEach(() => {
@@ -56,6 +59,29 @@ describe('/api/pages', () => {
       const res = await request(server).get('/api/pages/' + id)
 
       expect(res.status).toBe(404)
+    })
+
+    it('should return a page with media blocks if valid media blocks are passed', async () => {
+      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
+      const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
+
+      await mediaBlockOne.save()
+      await mediaBlockTwo.save()
+
+      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id, mediaBlockTwo._id] })
+      await page.save()
+
+      const res = await request(server).get('/api/pages/' + page._id)
+
+      expect(res.status).toBe(200)
+      expect(res.body.page).toHaveProperty('uri', page.uri)
+      expect(res.body.page.mediaBlocks).toHaveLength(2)
+      expect(res.body.page.mediaBlocks).toEqual(
+        [
+          expect.objectContaining({ rawText: rawTextOne }),
+          expect.objectContaining({ rawText: rawTextTwo })
+        ]
+      )
     })
   })
 
@@ -206,13 +232,13 @@ describe('/api/pages', () => {
     beforeEach(async () => {
       page = new Page({ uri: lloydsUri })
       await page.save()
-      
+
       id = page._id
     })
 
     it('should return 404 if id is invalid', async () => {
       id = 1
-      
+
       const res = await exec()
 
       expect(res.status).toBe(404)
