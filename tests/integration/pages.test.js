@@ -232,7 +232,7 @@ describe('/api/pages', () => {
       expect(res.status).toBe(422)
     })
 
-    it('should append media blocks if page exists', async () => {
+    it('should append media blocks if page exists and has media blocks', async () => {
       const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
       const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
 
