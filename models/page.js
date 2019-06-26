@@ -30,12 +30,17 @@ const PageSchema = new mongoose.Schema(
 const Page = mongoose.model('Page', PageSchema)
 
 function validatePage (page, type = 'create') {
+  const mediaBlockSchema = {
+    rawText: Joi.string().required(),
+    videoUri: Joi.string().allow(null, '').uri()
+  }
+
   const schema = {
     uri: type === 'create' ? Joi.string().uri().required() : Joi.string().uri(),
     enabled: Joi.boolean(),
     requested: Joi.number(),
     site: Joi.objectId(),
-    mediaBlocks: Joi.array().items(Joi.object({ rawText: Joi.string().required() }).allow(null).allow(''))
+    mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow(''))
   }
   return Joi.validate(page, schema)
 }

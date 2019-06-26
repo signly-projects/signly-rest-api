@@ -29,7 +29,7 @@ function validateMediaBlock (mediaBlock) {
     rawText: Joi.string().required(),
     transcript: Joi.string(),
     bslScript: Joi.string(),
-    videoUri: Joi.string().uri()
+    videoUri: Joi.string().allow('', null)
   }
 
   return Joi.validate(mediaBlock, schema)
