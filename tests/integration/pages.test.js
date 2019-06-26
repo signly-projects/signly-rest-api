@@ -66,7 +66,7 @@ describe('/api/pages', () => {
       expect(res.status).toBe(404)
     })
 
-    it('should return a page with media blocks if they exisat', async () => {
+    it('should return a page with media blocks if they exist', async () => {
       const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
       const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
 
@@ -207,7 +207,7 @@ describe('/api/pages', () => {
       )
     })
 
-    it('should return the existing page with media blocks if row text is sent', async () => {
+    it('should return the existing page with media blocks if row text exists and is valid', async () => {
       const page = new Page({ uri: lloydsUri })
       await page.save()
 
@@ -224,12 +224,28 @@ describe('/api/pages', () => {
       )
     })
 
-    it('should return a 422 if media blocks raw text is no included in media blocks array', async () => {
+    it('should return a 422 if media blocks raw text is not included in media blocks array', async () => {
       mediaBlocks = { randomKey: rawTextOne }
 
       const res = await exec()
 
       expect(res.status).toBe(422)
+    })
+
+    it('should return a 422 if media blocks raw text is empty', async () => {
+      mediaBlocks = { randomKey: '' }
+
+      const res = await exec()
+
+      expect(res.status).toBe(422)
+    })
+
+    it('should return 201 for an empty media block array', async () => {
+      mediaBlocks = []
+
+      const res = await exec()
+
+      expect(res.status).toBe(201)
     })
 
     it('should append media blocks if page exists and has media blocks', async () => {
@@ -259,25 +275,65 @@ describe('/api/pages', () => {
         ]
       )
     })
+
+    it('should not create media blocks with the same raw text', async () => {
+      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
+
+      await mediaBlockOne.save()
+
+      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id] })
+      await page.save()
+
+      mediaBlocks = [{ rawText: rawTextOne }]
+
+      const res = await exec()
+
+      expect(res.status).toBe(200)
+
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.stringMatching(mediaBlockOne.id),
+          expect.any(String)
+        ]
+      )
+    })
   })
 
-  describe('PUT /:id', () => {
+  describe('PATCH /:id', () => {
     let newUri
+    let mediaBlockOne
     let page
     let id
+    let enabled
+    let mediaBlocks
 
     const exec = async () => {
       return await request(server)
-        .put('/api/pages/' + id)
-        .send({ page: { uri: newUri, enabled: true }})
+        .patch('/api/pages/' + id)
+        .send({
+          page: {
+            uri: newUri,
+            enabled: enabled,
+            mediaBlocks: mediaBlocks
+          }
+        })
     }
 
     beforeEach(async () => {
-      page = new Page({ uri: lloydsUri })
+      mediaBlockOne = new MediaBlock({ rawText: rawTextOne, transcript: rawTextOne.toLowerCase() })
+      await mediaBlockOne.save()
+
+      // We need to include the transcript because it's our unique identifier for a media block
+      page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id] })
       await page.save()
 
       id = page._id
+      enabled = false
       newUri = lloydsUri
+      mediaBlocks = []
     })
 
     it('should return 422 if page uri is not valid', async () => {
@@ -317,7 +373,80 @@ describe('/api/pages', () => {
 
       expect(res.body.page).toHaveProperty('_id')
       expect(res.body.page).toHaveProperty('uri', newUri)
+      expect(res.body.page).toHaveProperty('enabled', false)
+    })
+
+    it('should allow to enable a page', async () => {
+      enabled = true
+
+      const res = await exec()
+
+      expect(res.body.page).toHaveProperty('_id')
+      expect(res.body.page).toHaveProperty('uri', newUri)
       expect(res.body.page).toHaveProperty('enabled', true)
+    })
+
+    it('should allow to update a page uri', async () => {
+      newUri = 'https://monzo.com/about'
+
+      const res = await exec()
+
+      expect(res.body.page).toHaveProperty('_id')
+      expect(res.body.page).toHaveProperty('uri', newUri)
+      expect(res.body.page).toHaveProperty('enabled', false)
+    })
+
+    it('should append media blocks if new are passed', async () => {
+      mediaBlocks = [{ rawText: rawTextThree }]
+
+      const res = await exec()
+
+      expect(res.status).toBe(200)
+
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.stringMatching(mediaBlockOne.id),
+          expect.any(String)
+        ]
+      )
+    })
+
+    it('should not create media blocks with the same raw text', async () => {
+      mediaBlocks = [{ rawText: rawTextOne }]
+
+      const res = await exec()
+
+      expect(res.status).toBe(200)
+
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.stringMatching(mediaBlockOne.id),
+          expect.any(String)
+        ]
+      )
+    })
+
+    it('should erase media blocks if empty array is sent', async () => {
+      mediaBlocks = []
+
+      const res = await exec()
+
+      expect(res.status).toBe(200)
+
+      const reqMediaBlocks = res.body.page.mediaBlocks
+
+      expect(reqMediaBlocks).toHaveLength(1)
+      expect(reqMediaBlocks).toEqual(
+        [
+          expect.stringMatching(mediaBlockOne.id)
+        ]
+      )
     })
   })
 

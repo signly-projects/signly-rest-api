@@ -18,7 +18,7 @@ router.get('/:id', validateObjectId, getPage)
 router.post('/', createPage)
 
 // PUT /api/pages/:pageId
-router.put('/:id', validateObjectId, updatePage)
+router.patch('/:id', validateObjectId, updatePage)
 
 // DELETE /api/pages/:pageId
 router.delete('/:id', validateObjectId, deletePage)

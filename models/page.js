@@ -1,4 +1,5 @@
 const Joi = require('joi')
+Joi.objectId = require('joi-objectid')(Joi)
 const mongoose = require('mongoose')
 
 const { SiteSchema } = require('./site')
@@ -28,13 +29,13 @@ const PageSchema = new mongoose.Schema(
 
 const Page = mongoose.model('Page', PageSchema)
 
-function validatePage (page) {
+function validatePage (page, type = 'create') {
   const schema = {
-    uri: Joi.string().uri().required(),
+    uri: type === 'create' ? Joi.string().uri().required() : Joi.string().uri(),
     enabled: Joi.boolean(),
     requested: Joi.number(),
     site: Joi.objectId(),
-    mediaBlocks: Joi.array(),
+    mediaBlocks: Joi.array().items(Joi.object({ rawText: Joi.string().required() }).allow(null).allow(''))
   }
   return Joi.validate(page, schema)
 }
