@@ -23,6 +23,7 @@ describe('/api/pages', () => {
   afterEach(async () => {
     server.close()
     await Page.deleteMany({})
+    await MediaBlock.deleteMany({})
   })
 
   describe('GET /', () => {
@@ -249,54 +250,42 @@ describe('/api/pages', () => {
     })
 
     it('should append media blocks if page exists and has media blocks', async () => {
-      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
-      const mediaBlockTwo = new MediaBlock({ rawText: rawTextTwo })
-
-      await mediaBlockOne.save()
-      await mediaBlockTwo.save()
-
-      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id, mediaBlockTwo._id] })
-      await page.save()
+      const res = await exec() // Creates the first media blocks
+      const mediaBlockOneId = res.body.page.mediaBlocks[0]
+      const mediaBlockTwoId = res.body.page.mediaBlocks[1]
 
       mediaBlocks = [{ rawText: rawTextThree }]
 
-      const res = await exec()
+      const res2 = await exec()
 
-      expect(res.status).toBe(200)
+      expect(res2.status).toBe(200)
 
-      const reqMediaBlocks = res.body.page.mediaBlocks
+      const reqMediaBlocks = res2.body.page.mediaBlocks
 
       expect(reqMediaBlocks).toHaveLength(3)
       expect(reqMediaBlocks).toEqual(
         [
-          expect.stringMatching(mediaBlockOne.id),
-          expect.stringMatching(mediaBlockTwo.id),
-          expect.any(String)
+          expect.stringMatching(mediaBlockOneId),
+          expect.stringMatching(mediaBlockTwoId),
+          expect.not.stringMatching(mediaBlockOneId) || expect.not.stringMatching(mediaBlockTwoId)
         ]
       )
     })
 
-    it('should not create media blocks with the same raw text', async () => {
-      const mediaBlockOne = new MediaBlock({ rawText: rawTextOne })
+    it('should not create media blocks with the same transcript', async () => {
+      const res = await exec() // Creates the first media blocks
+      const mediaBlockOneId = res.body.page.mediaBlocks[0]
+      const mediaBlockTwoId = res.body.page.mediaBlocks[1]
 
-      await mediaBlockOne.save()
+      const res2 = await exec()
+      const reqMediaBlocks = res2.body.page.mediaBlocks
 
-      const page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id] })
-      await page.save()
-
-      mediaBlocks = [{ rawText: rawTextOne }]
-
-      const res = await exec()
-
-      expect(res.status).toBe(200)
-
-      const reqMediaBlocks = res.body.page.mediaBlocks
-
+      expect(res2.status).toBe(200)
       expect(reqMediaBlocks).toHaveLength(2)
       expect(reqMediaBlocks).toEqual(
         [
-          expect.stringMatching(mediaBlockOne.id),
-          expect.any(String)
+          expect.stringMatching(mediaBlockOneId),
+          expect.stringMatching(mediaBlockTwoId),
         ]
       )
     })
@@ -324,10 +313,12 @@ describe('/api/pages', () => {
 
     beforeEach(async () => {
       mediaBlockOne = new MediaBlock({ rawText: rawTextOne, transcript: rawTextOne.toLowerCase() })
-      await mediaBlockOne.save()
+      mediaBlockOne = await mediaBlockOne.save()
+
+      console.log(mediaBlockOne._id.toString())
 
       // We need to include the transcript because it's our unique identifier for a media block
-      page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id] })
+      page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id.toString()] })
       await page.save()
 
       id = page._id
@@ -408,7 +399,7 @@ describe('/api/pages', () => {
       expect(reqMediaBlocks).toHaveLength(2)
       expect(reqMediaBlocks).toEqual(
         [
-          expect.stringMatching(mediaBlockOne.id),
+          expect.stringMatching(mediaBlockOne._id.toString()),
           expect.any(String)
         ]
       )
@@ -423,16 +414,15 @@ describe('/api/pages', () => {
 
       const reqMediaBlocks = res.body.page.mediaBlocks
 
-      expect(reqMediaBlocks).toHaveLength(2)
+      expect(reqMediaBlocks).toHaveLength(1)
       expect(reqMediaBlocks).toEqual(
         [
-          expect.stringMatching(mediaBlockOne.id),
-          expect.any(String)
+          expect.stringMatching(mediaBlockOne._id.toString())
         ]
       )
     })
 
-    it('should erase media blocks if empty array is sent', async () => {
+    it('should not erase media blocks if empty array is sent', async () => {
       mediaBlocks = []
 
       const res = await exec()

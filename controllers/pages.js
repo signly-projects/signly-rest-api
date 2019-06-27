@@ -41,23 +41,29 @@ exports.createPage = async (req, res, next) => {
 
   if (newPage.mediaBlocks) {
     await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
-      const { error } = validateMediaBlock(newMediaBlock)
 
+      const { error } = validateMediaBlock(newMediaBlock)
       if (error) {
         return res.status(422).send(error.details[0].message)
+
       }
 
       let mediaBlock = await MediaBlock.findOne({ transcript: newMediaBlock.rawText.toLowerCase() })
-
       if (!mediaBlock) {
         mediaBlock = new MediaBlock({
           transcript: newMediaBlock.rawText.toLowerCase(),
           rawText: newMediaBlock.rawText
         })
-
         mediaBlock = await mediaBlock.save()
       }
-      mediaBlocks.push(mediaBlock._id)
+
+      if (page && page.mediaBlocks && page.mediaBlocks.length) {
+        if (!page.mediaBlocks.some(existingMediaBlock => existingMediaBlock._id.equals(mediaBlock._id))) {
+          mediaBlocks.push(mediaBlock._id)
+        }
+      } else {
+        mediaBlocks.push(mediaBlock._id)
+      }
     }))
   }
 
@@ -112,7 +118,10 @@ exports.updatePage = async (req, res, next) => {
 
         mediaBlock = await mediaBlock.save()
       }
-      mediaBlocks.push(mediaBlock._id)
+
+      if (!page.mediaBlocks.some(existingMediaBlock => existingMediaBlock._id.equals(mediaBlock._id))) {
+        mediaBlocks.push(mediaBlock._id)
+      }
     }))
   }
 
