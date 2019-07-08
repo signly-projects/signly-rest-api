@@ -15,6 +15,10 @@ const MediaBlockSchema = new mongoose.Schema(
     },
     videoUri: {
       type: String
+    },
+    persisted: {
+      type: Boolean,
+      default:  false
     }
   },
   {

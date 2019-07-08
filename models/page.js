@@ -1,12 +1,16 @@
 const Joi = require('joi')
 Joi.objectId = require('joi-objectid')(Joi)
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const { SiteSchema } = require('./site')
 const { MediaBlockSchema } = require('./media-block')
 
-const PageSchema = new mongoose.Schema(
+const PageSchema = new Schema(
   {
+    title: {
+      type: String
+    },
     uri: {
       type: String,
       required: true
@@ -20,7 +24,7 @@ const PageSchema = new mongoose.Schema(
       default: 1
     },
     site: SiteSchema,
-    mediaBlocks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MediaBlock' }],
+    mediaBlocks: [{ type: Schema.Types.ObjectId, ref: 'MediaBlock' }]
   },
   {
     timestamps: true
