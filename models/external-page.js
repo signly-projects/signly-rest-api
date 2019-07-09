@@ -1,17 +1,23 @@
 class ExternalPage {
   constructor (url, title) {
-    this._url = url
-    this._title = title
-    this._textSegments = []
+    this.url = url
+    this.title = title
+    this.textSegments = []
+    this.textSegmentCounter = 0
+    this.wordCounter = 0
   }
 
-  set addTextSegment (textSegment) {
-    this._textSegments.push(textSegment)
+  addTextSegment (textSegment) {
+    if (!this.textSegments.includes(textSegment)) {
+      this.textSegments.push(textSegment)
+      this.textSegmentCounter += 1
+      this.wordCounter += textSegment.split(' ').length
+    }
   }
 
-  get textSegments () {
-    return this._textSegments
+  textSegments () {
+    return this.textSegments
   }
 }
 
-exports.ExternalPage = ExternalPage
+module.exports = ExternalPage

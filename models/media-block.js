@@ -18,7 +18,7 @@ const MediaBlockSchema = new mongoose.Schema(
     },
     persisted: {
       type: Boolean,
-      default:  false
+      default: true
     }
   },
   {
