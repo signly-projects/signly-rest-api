@@ -11,9 +11,11 @@ steps:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
 
-- script: |
-    yarn install
-  displayName: 'yarn install'
+- script: curl -o- -L https://yarnpkg.com/install.sh | bash
+  displayName: 'Install Yarn'
+
+- script: yarn install
+  displayName: 'Install dependencies'
 
 #- script: |
 #    yarn test
