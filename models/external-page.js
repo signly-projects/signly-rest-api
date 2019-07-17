@@ -14,7 +14,7 @@ class ExternalPage {
   }
 
   addTextSegment (textSegment) {
-    if (!this.mediaBlocks.some(mb => mb.textSegment === textSegment )) {
+    if (!this.mediaBlocks.some(mb => mb.rawText === textSegment)) {
       this.mediaBlocks.push(new MediaBlock(textSegment))
       this.textSegmentCounter += 1
       this.wordCounter += textSegment.split(' ').length
