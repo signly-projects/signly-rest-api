@@ -34,6 +34,7 @@
     "mongoose": "^5.5.10",
     "multi-encrypt": "^1.0.4",
     "nightmare": "^3.0.2",
+    "puppeteer": "^1.18.1",
     "winston": "^3.2.1"
   },
   "devDependencies": {

@@ -17,6 +17,9 @@ steps:
 - script: yarn install
   displayName: 'Install dependencies'
 
+- script: yarn add puppeteer
+  displayName: 'Install puppeteer'
+
 #- script: |
 #    yarn test
 #  displayName: 'yarn test'
