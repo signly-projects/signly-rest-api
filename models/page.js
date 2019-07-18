@@ -44,6 +44,7 @@ function validatePage (page, type = 'create') {
     enabled: Joi.boolean(),
     requested: Joi.number(),
     site: Joi.objectId(),
+    title: Joi.string(),
     mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow(''))
   }
   return Joi.validate(page, schema)

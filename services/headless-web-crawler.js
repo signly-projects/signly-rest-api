@@ -117,7 +117,7 @@ const headlessWebCrawler = async (pageUri, includeNestedPages = false) => {
     },
     // catch all errors
     onError: (error) => {
-      // winston.error(error)
+      winston.error(error)
     }
   })
 
@@ -126,10 +126,11 @@ const headlessWebCrawler = async (pageUri, includeNestedPages = false) => {
     await crawler.onIdle()
     await crawler.close()
   } catch (error) {
+    winston.error(error)
     return null
   }
 
-  return externalPages
+  return externalPages[0]
 }
 
 exports.headlessWebCrawler = headlessWebCrawler

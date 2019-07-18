@@ -5,19 +5,15 @@ class MediaBlock {
 }
 
 class ExternalPage {
-  constructor (url, title) {
-    this.url = url
+  constructor (uri, title) {
+    this.uri = uri
     this.title = title
     this.mediaBlocks = []
-    this.textSegmentCounter = 0
-    this.wordCounter = 0
   }
 
   addTextSegment (textSegment) {
     if (!this.mediaBlocks.some(mb => mb.rawText === textSegment)) {
       this.mediaBlocks.push(new MediaBlock(textSegment))
-      this.textSegmentCounter += 1
-      this.wordCounter += textSegment.split(' ').length
     }
   }
 
