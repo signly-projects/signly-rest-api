@@ -1,7 +1,7 @@
 const winston = require('winston')
 const { Page, validatePage } = require('../models/page')
 const { MediaBlock, validateMediaBlock } = require('../models/media-block')
-const { headlessWebCrawler } = require('../services/headless-web-crawler')
+const { nightmareCrawler } = require('../services/nightmare-crawler')
 const axios = require('axios')
 
 exports.getExternalPage = async (req, res, next) => {
@@ -18,7 +18,7 @@ exports.getExternalPage = async (req, res, next) => {
     return res.status(404).send('External page with the given URI not found.', error)
   }
 
-  let externalPage = await headlessWebCrawler(pageUri)
+  let externalPage = await nightmareCrawler(pageUri)
 
   res.status(200).send({ externalPage: externalPage })
 }
@@ -37,7 +37,7 @@ exports.createFromExternalPage = async (req, res, next) => {
     // return res.status(404).send('External page with the given URI not found.')
   }
 
-  let newPage = await headlessWebCrawler(pageUri)
+  let newPage = await nightmareCrawler(pageUri)
 
   const { error } = validatePage(newPage)
 
