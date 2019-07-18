@@ -1,3 +1,4 @@
+const winston = require('winston')
 const { headlessWebCrawler } = require('../services/headless-web-crawler')
 const axios = require('axios')
 
@@ -11,7 +12,8 @@ exports.getExternalPage = async (req, res, next) => {
   try {
     await axios.get(pageUri, { timeout: 5000 })
   } catch (error) {
-    return res.status(404).send('External page with the given URI not found.')
+    winston.error(error)
+    return res.status(404).send('External page with the given URI not found.', error)
   }
 
   let externalPages = await headlessWebCrawler(pageUri)
