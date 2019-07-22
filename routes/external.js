@@ -8,6 +8,7 @@ const router = express.Router()
 // GET /api/external/page?uri=https://signly.co/
 router.get('/page', validateUri, getExternalPage)
 
+// POST /api/external/page
 router.post('/page', createFromExternalPage)
 
 // GET /api/external/site?uri=https://signly.co/
