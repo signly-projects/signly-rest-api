@@ -49,6 +49,7 @@ const validTextSegment = ($, element) => {
 const cleanText = (text) => {
   return text
     .replace(config.blacklisted.text, '')
+    .replace(/\s\s+/g, ' ')
     .trim()
 }
 
