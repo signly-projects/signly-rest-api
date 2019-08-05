@@ -1,5 +1,5 @@
 const express = require('express')
-const { getMediaBlocks, getMediaBlock, getMediaBlockByTranscript } = require('../controllers/media-blocks')
+const { getMediaBlocks, getMediaBlock, getMediaBlockByTranscript: getMediaBlockByNormalizedText } = require('../controllers/media-blocks')
 
 const router = express.Router()
 
@@ -7,7 +7,7 @@ const router = express.Router()
 router.get('/', getMediaBlocks)
 
 // GET /api/media-blocks
-router.get('/search', getMediaBlockByTranscript)
+router.get('/search', getMediaBlockByNormalizedText)
 
 // GET /api/pages/:pageId/media-blocks/:id
 router.get('/:id', getMediaBlock)

@@ -48,10 +48,10 @@ exports.createPage = async (req, res, next) => {
 
       }
 
-      let mediaBlock = await MediaBlock.findOne({ transcript: newMediaBlock.rawText.toLowerCase() })
+      let mediaBlock = await MediaBlock.findOne({ normalizedText: newMediaBlock.rawText.toLowerCase() })
       if (!mediaBlock) {
         mediaBlock = new MediaBlock({
-          transcript: newMediaBlock.rawText.toLowerCase(),
+          normalizedText: newMediaBlock.rawText.toLowerCase(),
           rawText: newMediaBlock.rawText
         })
         mediaBlock = await mediaBlock.save()
@@ -108,11 +108,11 @@ exports.updatePage = async (req, res, next) => {
         return res.status(422).send(error.details[0].message)
       }
 
-      let mediaBlock = await MediaBlock.findOne({ transcript: newMediaBlock.rawText.toLowerCase() })
+      let mediaBlock = await MediaBlock.findOne({ normalizedText: newMediaBlock.rawText.toLowerCase() })
 
       if (!mediaBlock) {
         mediaBlock = new MediaBlock({
-          transcript: newMediaBlock.rawText.toLowerCase(),
+          normalizedText: newMediaBlock.rawText.toLowerCase(),
           rawText: newMediaBlock.rawText
         })
 

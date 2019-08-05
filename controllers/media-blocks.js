@@ -1,7 +1,7 @@
 const { MediaBlock } = require('../models/media-block')
 
 exports.getMediaBlocks = async (req, res, next) => {
-  const mediaBlocks = await MediaBlock.find().sort({ transcript: 'desc' })
+  const mediaBlocks = await MediaBlock.find().sort({ normalizedText: 'desc' })
 
   res.status(200).send({ mediaBlocks: mediaBlocks })
 }
@@ -13,10 +13,10 @@ exports.getMediaBlock = async (req, res, next) => {
 }
 
 exports.getMediaBlockByTranscript = async (req, res, next) => {
-  const mediaBlock = await MediaBlock.findOne({ transcript: decodeURIComponent(req.query.transcript) })
+  const mediaBlock = await MediaBlock.findOne({ normalizedText: decodeURIComponent(req.query.normalizedText) })
 
   if (!mediaBlock) {
-    return res.status(404).send('Media block with the given transcript not found.')
+    return res.status(404).send('Media block with the given normalizedText not found.')
   }
 
   res.status(200).send({ mediaBlock: mediaBlock })

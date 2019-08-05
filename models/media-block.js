@@ -7,7 +7,7 @@ const MediaBlockSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    transcript: {
+    normalizedText: {
       type: String
     },
     bslScript: {
@@ -31,7 +31,7 @@ const MediaBlock = mongoose.model('MediaBlock', MediaBlockSchema)
 function validateMediaBlock (mediaBlock) {
   const schema = {
     rawText: Joi.string().required(),
-    transcript: Joi.string(),
+    normalizedText: Joi.string(),
     bslScript: Joi.string(),
     videoUri: Joi.string().allow('', null)
   }
