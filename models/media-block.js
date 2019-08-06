@@ -28,12 +28,12 @@ const MediaBlockSchema = new mongoose.Schema(
 
 const MediaBlock = mongoose.model('MediaBlock', MediaBlockSchema)
 
-function validateMediaBlock (mediaBlock) {
+function validateMediaBlock (mediaBlock, type = 'create') {
   const schema = {
-    rawText: Joi.string().required(),
+    rawText: type === 'create' ? Joi.string().required() : Joi.string(),
     normalizedText: Joi.string(),
     bslScript: Joi.string(),
-    videoUri: Joi.string().allow('', null)
+    videoUri: Joi.string().uri().allow('', null)
   }
 
   return Joi.validate(mediaBlock, schema)
