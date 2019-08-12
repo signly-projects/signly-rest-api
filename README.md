@@ -22,7 +22,7 @@
 
 `nodejs -v`
 
-#### (Additional) Install build essencials - needed for some npm packages to work
+#### (Additional) Install build essentials - needed for some npm packages to work
 
 `sudo apt install build-essential`
 
