@@ -1,14 +1,16 @@
-const { Page, validatePage } = require('../models/page')
-const { MediaBlock, validateMediaBlock } = require('../models/media-block')
+const { validatePage } = require('../models/page')
+
+const PageService = require('../services/pages.service')
+const MediaBlockService = require('../services/media-blocks.service')
 
 exports.getPages = async (req, res, next) => {
-  const pages = await Page.find().sort({ requested: 'desc' })
+  const pages = await PageService.findAll(req.query)
 
   res.status(200).send({ pages: pages })
 }
 
 exports.getPageByUri = async (req, res, next) => {
-  const page = await Page.findOne({ uri: decodeURIComponent(req.query.uri) }).populate('mediaBlocks')
+  const page = await PageService.findByUri(decodeURIComponent(req.query.uri), true)
 
   if (!page) {
     return res.status(404).send('Page with the given URI not found.')
@@ -18,7 +20,7 @@ exports.getPageByUri = async (req, res, next) => {
 }
 
 exports.getPage = async (req, res, next) => {
-  const page = await Page.findById(req.params.id).populate('mediaBlocks')
+  const page = await PageService.findById(req.params.id, true)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
@@ -35,56 +37,20 @@ exports.createPage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findOne({ uri: newPage.uri })
-
-  let mediaBlocks = []
-
-  if (newPage.mediaBlocks) {
-    await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
-
-      const { error } = validateMediaBlock(newMediaBlock)
-      if (error) {
-        return res.status(422).send(error.details[0].message)
-
-      }
-
-      let mediaBlock = await MediaBlock.findOne({ normalizedText: newMediaBlock.rawText.toLowerCase() })
-      if (!mediaBlock) {
-        mediaBlock = new MediaBlock({
-          normalizedText: newMediaBlock.rawText.toLowerCase(),
-          rawText: newMediaBlock.rawText
-        })
-        mediaBlock = await mediaBlock.save()
-      }
-
-      if (page && page.mediaBlocks && page.mediaBlocks.length) {
-        if (!page.mediaBlocks.some(existingMediaBlock => existingMediaBlock._id.equals(mediaBlock._id))) {
-          mediaBlocks.push(mediaBlock._id)
-        }
-      } else {
-        mediaBlocks.push(mediaBlock._id)
-      }
-    }))
-  }
+  let page = await PageService.findByUri(decodeURIComponent(newPage.uri))
+  let mediaBlocks = await MediaBlockService.findOrCreateMediaBlocks(newPage, page)
 
   if (!page) {
-    page = new Page({
-      uri: newPage.uri,
-      mediaBlocks: mediaBlocks
-    })
-
-    page = await page.save()
+    let page = await PageService.create(newPage, mediaBlocks)
     return res.status(201).send({ page: page })
   }
 
-  page.requested += 1
-  page.mediaBlocks.push(...mediaBlocks)
+  page = await PageService.updateRequest(page, mediaBlocks)
 
-  page = await page.save()
   res.status(200).send({ page: page })
 }
 
-exports.updatePage = async (req, res, next) => {
+exports.patchPage = async (req, res, next) => {
   const newPage = req.body.page
   const { error } = validatePage(newPage, 'update')
 
@@ -92,51 +58,20 @@ exports.updatePage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let page = await Page.findById(req.params.id)
+  let page = await PageService.findById(decodeURIComponent(req.params.id))
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
   }
 
-  let mediaBlocks = []
+  let mediaBlocks = await MediaBlockService.findOrCreateMediaBlocks(newPage, page)
 
-  if (newPage.mediaBlocks) {
-    await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
-      const { error } = validateMediaBlock(newMediaBlock)
-
-      if (error) {
-        return res.status(422).send(error.details[0].message)
-      }
-
-      let mediaBlock = await MediaBlock.findOne({ normalizedText: newMediaBlock.rawText.toLowerCase() })
-
-      if (!mediaBlock) {
-        mediaBlock = new MediaBlock({
-          normalizedText: newMediaBlock.rawText.toLowerCase(),
-          rawText: newMediaBlock.rawText
-        })
-
-        mediaBlock = await mediaBlock.save()
-      }
-
-      if (!page.mediaBlocks.some(existingMediaBlock => existingMediaBlock._id.equals(mediaBlock._id))) {
-        mediaBlocks.push(mediaBlock._id)
-      }
-    }))
-  }
-
-  page.uri = newPage.uri || page.uri
-  page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
-  page.mediaBlocks.push(...mediaBlocks)
-
-  page = await page.save()
+  page = await PageService.update(page, newPage, mediaBlocks)
   res.status(200).send({ page: page })
 }
 
 exports.deletePage = async (req, res, next) => {
-  const id = req.params.id
-
-  const page = await Page.findByIdAndDelete(id)
+  const page = await PageService.delete(req.params.id)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')

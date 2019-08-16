@@ -315,8 +315,6 @@ describe('/api/pages', () => {
       mediaBlockOne = new MediaBlock({ rawText: rawTextOne, normalizedText: rawTextOne.toLowerCase() })
       mediaBlockOne = await mediaBlockOne.save()
 
-      console.log(mediaBlockOne._id.toString())
-
       // We need to include the normalizedText because it's our unique identifier for a media block
       page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id.toString()] })
       await page.save()

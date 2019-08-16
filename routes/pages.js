@@ -1,7 +1,7 @@
 const express = require('express')
 const validateObjectId = require('../middleware/validateObjectId')
 const validateUri = require('../middleware/validateUri')
-const { getPages, getPage, getPageByUri, createPage, updatePage, deletePage } = require('../controllers/pages')
+const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage } = require('../controllers/pages')
 
 const router = express.Router()
 
@@ -17,8 +17,8 @@ router.get('/:id', validateObjectId, getPage)
 // POST /api/pages
 router.post('/', createPage)
 
-// PUT /api/pages/:pageId
-router.patch('/:id', validateObjectId, updatePage)
+// PATCH /api/pages/:pageId
+router.patch('/:id', validateObjectId, patchPage)
 
 // DELETE /api/pages/:pageId
 router.delete('/:id', validateObjectId, deletePage)
