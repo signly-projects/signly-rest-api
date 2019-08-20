@@ -1,7 +1,7 @@
-const { validatePage } = require('../models/page')
+const { validatePage } = require('~models/page')
 
-const PageService = require('../services/pages.service')
-const MediaBlockService = require('../services/media-blocks.service')
+const PageService = require('~services/pages.service')
+const MediaBlockService = require('~services/media-blocks.service')
 
 exports.getPages = async (req, res, next) => {
   const pages = await PageService.findAll(req.query)

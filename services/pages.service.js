@@ -1,4 +1,4 @@
-const { Page } = require('../models/page')
+const { Page } = require('~models/page')
 
 exports.findAll = async (query) => {
   let options = {

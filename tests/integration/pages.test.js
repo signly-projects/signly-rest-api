@@ -1,7 +1,8 @@
+require('module-alias/register')
 const request = require('supertest')
 const mongoose = require('mongoose')
-const { Page } = require('../../models/page')
-const { MediaBlock } = require('../../models/media-block')
+const { Page } = require('~models/page')
+const { MediaBlock } = require('~models/media-block')
 
 let server
 

@@ -1,6 +1,6 @@
 const { validateMediaBlock } = require('~models/media-block')
 
-const MediaBlocksService = require('../services/media-blocks.service')
+const MediaBlocksService = require('~services/media-blocks.service')
 
 exports.getMediaBlock = async (req, res, next) => {
   const mediaBlock = await MediaBlocksService.findById(req.params.id)

@@ -1,4 +1,4 @@
-const { MediaBlock } = require('../models/media-block')
+const { MediaBlock } = require('~models/media-block')
 
 exports.findById = async (mediaBlockId) => {
   return MediaBlock.findById(mediaBlockId)
