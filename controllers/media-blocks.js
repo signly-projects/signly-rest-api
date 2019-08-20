@@ -1,4 +1,4 @@
-const { validateMediaBlock } = require('../models/media-block')
+const { validateMediaBlock } = require('~models/media-block')
 
 const MediaBlocksService = require('../services/media-blocks.service')
 

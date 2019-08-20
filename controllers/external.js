@@ -1,7 +1,7 @@
 const winston = require('winston')
-const { Page, validatePage } = require('../models/page')
-const { MediaBlock, validateMediaBlock } = require('../models/media-block')
-const { puppeteerCrawler } = require('../services/pupeteer-crawler')
+const { Page, validatePage } = require('~models/page')
+const { MediaBlock, validateMediaBlock } = require('~models/media-block')
+const { puppeteerCrawler } = require('~services/pupeteer-crawler')
 const axios = require('axios')
 
 exports.getExternalPage = async (req, res, next) => {

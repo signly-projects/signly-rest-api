@@ -1,5 +1,5 @@
 const express = require('express')
-const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('../controllers/media-blocks')
+const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
 
 const router = express.Router()
 

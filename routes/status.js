@@ -1,5 +1,5 @@
 const express = require('express')
-const { getStatus } = require('../controllers/status')
+const { getStatus } = require('~controllers/status')
 
 const router = express.Router()
 

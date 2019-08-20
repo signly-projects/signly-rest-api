@@ -1,7 +1,7 @@
 const express = require('express')
-const validateUri = require('../middleware/validateUri')
+const validateUri = require('~middleware/validateUri')
 
-const { getExternalPage, createFromExternalPage } = require('../controllers/external')
+const { getExternalPage, createFromExternalPage } = require('~controllers/external')
 
 const router = express.Router()
 
