@@ -7,7 +7,11 @@ exports.findAll = async (query) => {
     }
   }
 
-  return await Page.find(query).sort(options.sort)
+  if (query.withMediaBlocks) {
+    return await Page.find().populate('mediaBlocks')
+  }
+
+  return await Page.find().sort(options.sort)
 }
 
 exports.findByUri = async (uri, withMediaBlocks = false) => {
