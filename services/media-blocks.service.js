@@ -46,5 +46,11 @@ exports.update = async (mediaBlock, newMediaBlock) => {
   mediaBlock.bslScript = newMediaBlock.bslScript
   mediaBlock.videoUri = newMediaBlock.videoUri
 
+  if (mediaBlock.videoUri) {
+    mediaBlock.status = 'translated'
+  } else {
+    mediaBlock.status = newMediaBlock.status
+  }
+
   return await mediaBlock.save()
 }
