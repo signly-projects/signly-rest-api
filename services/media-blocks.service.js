@@ -49,7 +49,7 @@ exports.update = async (mediaBlock, newMediaBlock) => {
   if (mediaBlock.videoUri) {
     mediaBlock.status = 'translated'
   } else {
-    mediaBlock.status = newMediaBlock.status
+    mediaBlock.status = newMediaBlock.status || 'untranslated'
   }
 
   return await mediaBlock.save()
