@@ -1,4 +1,5 @@
 const express = require('express')
+const validateObjectId = require('~middleware/validateObjectId')
 const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
 
 const router = express.Router()
@@ -7,9 +8,9 @@ const router = express.Router()
 router.get('/search', getMediaBlockByNormalizedText)
 
 // GET /api/media-blocks/:id
-router.get('/:id', getMediaBlock)
+router.get('/:id', validateObjectId, getMediaBlock)
 
 // PATCH
-router.patch('/:id', patchMediaBlock)
+router.patch('/:id', validateObjectId, patchMediaBlock)
 
 module.exports = router
