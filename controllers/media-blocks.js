@@ -41,3 +41,9 @@ exports.patchMediaBlock = async (req, res, next) => {
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }
+exports.uploadVideo = async (req, res, next) => {
+  const file = req.file
+
+  res.status(200).send({ uploadedFile: file })
+}
+
