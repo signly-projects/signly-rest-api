@@ -43,20 +43,6 @@ exports.findOrCreateMediaBlocks = async (newPage, page) => {
   return mediaBlocks
 }
 
-exports.createOrUpdateVideo = async (currentMediaBlock, newVideo) => {
-  if (newVideo) {
-    if (currentMediaBlock.video) {
-      currentMediaBlock.video.uri = newVideo.uri
-      currentMediaBlock.markModified('video.uri')
-      return currentMediaBlock.video
-    } else {
-      return new Video({ uri: newVideo.uri })
-    }
-  } else {
-    return null
-  }
-}
-
 exports.update = async (mediaBlock, newMediaBlock) => {
   if (newMediaBlock.hasOwnProperty('video')) {
     if (newMediaBlock.video) {

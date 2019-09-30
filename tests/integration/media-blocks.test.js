@@ -7,7 +7,6 @@ const { Video } = require('~models/video')
 let server
 
 const rawTextOne = 'Chuck Norris doesn\'t read books. He stares them down until he gets the information he wants.'
-const rawTextTwo = 'There is no theory of evolution, just a list of creatures Chuck Norris allows to live.'
 const videoUriOne = 'https://signly.co/bslVideoOne.mp4'
 const videoUriTwo = 'https://signly.co/bslVideoTwo.mp4'
 
@@ -83,8 +82,6 @@ describe('/api/media-blocks', () => {
   })
 
   describe('PATCH /:id', () => {
-  //   let newUri
-  //   let mediaBlockOne
     let mediaBlock
     let id
     let status
@@ -97,20 +94,21 @@ describe('/api/media-blocks', () => {
         .send({
           mediaBlock: {
             status: status,
-            video: { uri: videoUriTwo }
+            video: video
           }
         })
     }
 
     beforeEach(async () => {
-      mediaBlock = new MediaBlock({ rawText: rawTextOne })
+      mediaBlock = new MediaBlock({ rawText: rawTextOne, normalizedText: rawTextOne.toLowerCase() })
       await mediaBlock.save()
 
       id = mediaBlock._id
+      video = { uri: videoUriOne }
     })
 
     it('should return 422 if video uri is not valid', async () => {
-      video = { videoUri: 'not.a.valid.uri' }
+      video = { uri: 'not.a.valid.uri' }
 
       const res = await exec()
 
@@ -119,7 +117,6 @@ describe('/api/media-blocks', () => {
 
     it('should return 404 if id is invalid', async () => {
       id = 1
-      // video = { uri: videoUriOne }
 
       const res = await exec()
 
@@ -128,7 +125,6 @@ describe('/api/media-blocks', () => {
 
     it('should return 404 if media block with the given id was not found', async () => {
       id = mongoose.Types.ObjectId()
-      // video = { uri: videoUriOne }
 
       const res = await exec()
 
@@ -141,137 +137,67 @@ describe('/api/media-blocks', () => {
       const updatedMediaBlock = await MediaBlock.findById(id)
 
       expect(updatedMediaBlock.video).toMatchObject({
-        uri: videoUriTwo
+        uri: videoUriOne
       })
     })
 
-  //   it('should return the updated page if it is valid', async () => {
-  //     const res = await exec()
-  //
-  //     expect(res.body.page).toHaveProperty('_id')
-  //     expect(res.body.page).toHaveProperty('uri', newUri)
-  //     expect(res.body.page).toHaveProperty('enabled', false)
-  //   })
-  //
-  //   it('should allow to enable a page', async () => {
-  //     enabled = true
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.body.page).toHaveProperty('_id')
-  //     expect(res.body.page).toHaveProperty('uri', newUri)
-  //     expect(res.body.page).toHaveProperty('enabled', true)
-  //   })
-  //
-  //   it('should allow to update a page uri', async () => {
-  //     newUri = 'https://monzo.com/about'
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.body.page).toHaveProperty('_id')
-  //     expect(res.body.page).toHaveProperty('uri', newUri)
-  //     expect(res.body.page).toHaveProperty('enabled', false)
-  //   })
-  //
-  //   it('should append media blocks if new are passed', async () => {
-  //     mediaBlocks = [{ rawText: rawTextThree }]
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.status).toBe(200)
-  //
-  //     const reqMediaBlocks = res.body.page.mediaBlocks
-  //
-  //     expect(reqMediaBlocks).toHaveLength(2)
-  //     expect(reqMediaBlocks).toEqual(
-  //       [
-  //         expect.stringMatching(mediaBlockOne._id.toString()),
-  //         expect.any(String)
-  //       ]
-  //     )
-  //   })
-  //
-  //   it('should not create media blocks with the same raw text', async () => {
-  //     mediaBlocks = [{ rawText: rawTextOne }]
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.status).toBe(200)
-  //
-  //     const reqMediaBlocks = res.body.page.mediaBlocks
-  //
-  //     expect(reqMediaBlocks).toHaveLength(1)
-  //     expect(reqMediaBlocks).toEqual(
-  //       [
-  //         expect.stringMatching(mediaBlockOne._id.toString())
-  //       ]
-  //     )
-  //   })
-  //
-  //   it('should not erase media blocks if empty array is sent', async () => {
-  //     mediaBlocks = []
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.status).toBe(200)
-  //
-  //     const reqMediaBlocks = res.body.page.mediaBlocks
-  //
-  //     expect(reqMediaBlocks).toHaveLength(1)
-  //     expect(reqMediaBlocks).toEqual(
-  //       [
-  //         expect.stringMatching(mediaBlockOne.id)
-  //       ]
-  //     )
-  //   })
+    it('should return the updated media block if it is valid', async () => {
+      const res = await exec()
+
+      expect(res.body.mediaBlock).toHaveProperty('_id')
+      expect(res.body.mediaBlock).toHaveProperty('rawText', rawTextOne)
+      expect(res.body.mediaBlock).toHaveProperty('normalizedText', rawTextOne.toLowerCase())
+      expect(res.body.mediaBlock).toHaveProperty('video.uri')
+      expect(res.body.mediaBlock).toHaveProperty('status')
+    })
+
+    it('should allow to add empty video url to media block and set status to untranslated', async () => {
+      video = { uri: '' }
+
+      const res = await exec()
+
+      expect(res.body.mediaBlock).toHaveProperty('video.uri', '')
+      expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
+    })
+
+    it('should allow to add null video url to media block and set status to untranslated', async () => {
+      video = { uri: null }
+
+      const res = await exec()
+
+      expect(res.body.mediaBlock).toHaveProperty('video.uri', null)
+      expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
+    })
+
+    it('should allow a null video object to media block and set status to untranslated', async () => {
+      video = null
+
+      const res = await exec()
+
+      expect(res.body.mediaBlock).not.toHaveProperty('video')
+      expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
+    })
+
+    it('should allow to update a video uri of a media block', async () => {
+      video = { uri: videoUriTwo }
+
+      const res = await exec()
+
+      expect(res.body.mediaBlock).toHaveProperty('video.uri', videoUriTwo)
+      expect(res.body.mediaBlock).toHaveProperty('status', 'translated')
+    })
+
+    it('should create a new video object in media block in one does not exist', async () => {
+      video = null
+
+      await exec()
+
+      video = { uri: videoUriTwo }
+
+      const res = await exec()
+
+      expect(res.body.mediaBlock).toHaveProperty('video.uri', videoUriTwo)
+      expect(res.body.mediaBlock).toHaveProperty('status', 'translated')
+    })
   })
-  //
-  // describe('DELETE /:id', () => {
-  //   let page
-  //   let id
-  //
-  //   const exec = async () => {
-  //     return await request(server)
-  //       .delete('/api/pages/' + id)
-  //       .send()
-  //   }
-  //
-  //   beforeEach(async () => {
-  //     page = new Page({ uri: lloydsUri })
-  //     await page.save()
-  //
-  //     id = page._id
-  //   })
-  //
-  //   it('should return 404 if id is invalid', async () => {
-  //     id = 1
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.status).toBe(404)
-  //   })
-  //
-  //   it('should return 404 if no page with the given id was found', async () => {
-  //     id = mongoose.Types.ObjectId()
-  //
-  //     const res = await exec()
-  //
-  //     expect(res.status).toBe(404)
-  //   })
-  //
-  //   it('should delete the page if input is valid', async () => {
-  //     await exec()
-  //
-  //     const pageInDb = await Page.findById(id)
-  //
-  //     expect(pageInDb).toBeNull()
-  //   })
-  //
-  //   it('should return the removed page', async () => {
-  //     const res = await exec()
-  //
-  //     expect(res.body.page).toHaveProperty('_id', page._id.toHexString())
-  //     expect(res.body.page).toHaveProperty('uri', page.uri)
-  //   })
-  // })
 })
