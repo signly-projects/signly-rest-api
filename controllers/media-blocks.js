@@ -42,8 +42,10 @@ exports.patchMediaBlock = async (req, res, next) => {
   res.status(200).send({ mediaBlock: mediaBlock })
 }
 exports.uploadVideo = async (req, res, next) => {
-  const file = req.file
+  if (req.fileValidationError) {
+    res.status(422).json(req.fileValidationError.message)
+  }
 
-  res.status(200).send({ uploadedFile: file })
+  res.status(200).send({ uploadedFile: req.file })
 }
 

@@ -14,8 +14,23 @@ const storage = multer.diskStorage({
   }
 })
 
+const fileFilter = (req, file, cb) => {
+  if (!file) {
+    req.fileValidationError = { error: 'EMPTY_FILE', message: 'Empty file received' }
+  } else if (file.mimetype !== 'video/mp4') {
+    req.fileValidationError = { error: 'INCORRECT_FILETYPE', message: 'Incorrect file type' }
+  }
+
+  if (req.fileValidationError) {
+    return cb(null, false, new Error(req.fileValidationError.message))
+  }
+
+  cb(null, true)
+}
+
 const upload = multer({
-  storage: storage
+  storage: storage,
+  fileFilter: fileFilter
 })
 
 // GET /api/media-blocks

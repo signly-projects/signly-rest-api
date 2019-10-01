@@ -26,6 +26,8 @@ node_modules/
 # Webstorm configs
 .idea/
 
+# Videos upload folder
+uploads/
 
 
 # Secrets - Handled by multi-encrypt
