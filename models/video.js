@@ -5,8 +5,11 @@ const VideoSchema = new mongoose.Schema(
   {
     uri: {
       type: String,
-      default: '',
-      required: false
+      default: ''
+    },
+    videoFile: {
+      type: Object,
+      default: null
     }
   },
   {

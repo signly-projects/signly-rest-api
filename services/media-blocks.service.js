@@ -65,3 +65,23 @@ exports.update = async (mediaBlock, newMediaBlock) => {
 
   return await mediaBlock.save()
 }
+
+exports.addVideo = async (mediaBlock, videoFile) => {
+  if (mediaBlock.video) {
+    mediaBlock.video.videoFile = videoFile
+    mediaBlock.markModified('video.videoFile')
+  } else {
+    mediaBlock.video = new Video({ videoFile: videoFile })
+  }
+
+  return await mediaBlock.save()
+}
+
+exports.deleteVideo = async (mediaBlock) => {
+  if (mediaBlock.video) {
+    mediaBlock.video.videoFile = null
+    mediaBlock.markModified('video.videoFile')
+  }
+
+  return await mediaBlock.save()
+}
