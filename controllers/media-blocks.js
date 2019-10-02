@@ -56,11 +56,11 @@ exports.uploadVideo = async (req, res, next) => {
 
   mediaBlock = await MediaBlocksService.addVideo(mediaBlock, req.file)
 
-  res.status(200).send({ videoFile: mediaBlock.video.videoFile })
+  res.status(200).send({ mediaBlock: mediaBlock })
 }
 
 exports.deleteVideo = async (req, res, next) => {
-  const mediaBlock = await MediaBlocksService.findById(req.params.id)
+  let mediaBlock = await MediaBlocksService.findById(req.params.id)
 
   if (!mediaBlock) {
     return res.status(404).send('Media block with the given ID not found.')
@@ -69,7 +69,7 @@ exports.deleteVideo = async (req, res, next) => {
   const videoFile = `video_${req.params.id}.mp4`
 
   await deleteFile(videoFile)
-  await MediaBlocksService.deleteVideo(mediaBlock)
+  mediaBlock = await MediaBlocksService.deleteVideo(mediaBlock)
 
-  res.status(200).send({ deletedFile: videoFile })
+  res.status(200).send({ mediaBlock: mediaBlock })
 }
