@@ -1,15 +1,11 @@
 const express = require('express')
-const multer = require('multer')
+
 const validateObjectId = require('~middleware/validateObjectId')
-const { storage, fileFilter } = require('~utils/storage')
-const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock, uploadVideo, deleteVideo } = require('~controllers/media-blocks')
+const video = require('~routes/media-blocks/video')
+
+const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
 
 const router = express.Router()
-
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter
-})
 
 // GET /api/media-blocks
 router.get('/search', getMediaBlockByNormalizedText)
@@ -21,9 +17,6 @@ router.get('/:id', validateObjectId, getMediaBlock)
 router.patch('/:id', validateObjectId, patchMediaBlock)
 
 
-// POST /api/media-blocks/:id/video
-router.post('/:id/video', validateObjectId, upload.single('file'), uploadVideo)
-
-router.delete('/:id/video', validateObjectId, deleteVideo)
+router.use('/:id/video', validateObjectId, video)
 
 module.exports = router
