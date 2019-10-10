@@ -1,6 +1,5 @@
 require('dotenv').config()
 const url = require('url')
-const uuidv4 = require('uuid/v4')
 const to = require('await-to-js').default
 const msRestNodeAuth = require('@azure/ms-rest-nodeauth')
 const { DefaultAzureCredential } = require('@azure/identity')
@@ -38,9 +37,11 @@ const storeVideoFile = async (videoFile) => {
     sharedKeyCredential
   )
   const encodingTransform = await getOrCreateTransform()
-  const uuid = uuidv4()
 
-  const jobInputAsset = getOrCreateJobInputAsset(uuid, videoFile)
+  const jobInputAsset = await getOrCreateJobInputAsset(videoFile)
+
+  const outputAssetName = `output_${videoFile.originalname}`
+  const jobOutputAsset = await createOutputAsset(outputAssetName)
 
   return videoFile
 }
@@ -94,7 +95,7 @@ const getOrCreateTransform = async () => {
   return transform
 }
 
-const appendFileToAsset = async (videoFile) => {
+const appendFileToAsset = async (videoFile, assetName) => {
   let date = new Date()
   date.setHours(date.getHours() + 1)
 
@@ -102,7 +103,7 @@ const appendFileToAsset = async (videoFile) => {
     permissions: 'ReadWrite',
     expiryTime: date
   }
-  const response = await azureMediaServicesClient.assets.listContainerSas(RESOURCE_GROUP, AMS_ACCOUNT_NAME, videoFile.originalname, sasInput)
+  const response = await azureMediaServicesClient.assets.listContainerSas(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName, sasInput)
   const uploadSasUrl = response.assetContainerSasUrls[0] || null
   const sasUri = url.parse(uploadSasUrl)
   const containerName = sasUri.pathname.replace(/^\/+/g, '')
@@ -115,12 +116,16 @@ const appendFileToAsset = async (videoFile) => {
   return await blockBlobClient.uploadFile(videoFile.path)
 }
 
-const getOrCreateJobInputAsset = async (uuid, videoFile) => {
-  let asset = await azureMediaServicesClient.assets.get(RESOURCE_GROUP, AMS_ACCOUNT_NAME, videoFile.originalname)
+const getOrCreateJobInputAsset = async (videoFile) => {
+  const assetName = `input_${videoFile.originalname}`
+
+  let asset = await azureMediaServicesClient.assets.get(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName)
 
   if (asset.error) {
-    asset = await createInputAsset(videoFile)
+    asset = await createInputAsset(videoFile, assetName)
   }
+
+  await appendFileToAsset(videoFile, assetName)
 
   return {
     odatatype: '#Microsoft.Media.JobInputAsset',
@@ -128,16 +133,20 @@ const getOrCreateJobInputAsset = async (uuid, videoFile) => {
   }
 }
 
-const createInputAsset = async (videoFile) => {
-  let asset = await azureMediaServicesClient.assets.createOrUpdate(RESOURCE_GROUP, AMS_ACCOUNT_NAME, videoFile.originalname, {
-    description: videoFile.originalname,
+const createInputAsset = async (videoFile, assetName) => {
+  let asset = await azureMediaServicesClient.assets.createOrUpdate(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName, {
+    description: assetName,
   })
-
-  await appendFileToAsset(videoFile)
 
   return asset
 }
 
 module.exports = {
   storeVideoFile
+}
+
+const createOutputAsset = async (assetName) => {
+  return await azureMediaServicesClient.assets.createOrUpdate(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName, {
+    description: assetName,
+  })
 }
