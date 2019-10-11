@@ -14,6 +14,10 @@ const VideoSchema = new mongoose.Schema(
     encodingState: {
       type: String,
       default: 'None'
+    },
+    amsIdentifier: {
+      type: String,
+      default: ''
     }
   },
   {

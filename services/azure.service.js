@@ -39,24 +39,25 @@ const storeVideoFile = async (videoFile) => {
 
   const encodingTransform = await getOrCreateTransform()
 
-  const currentDate = new Date()
+  const currentDate = new Date().getTime()
+  const amsIdentifier = `${videoFile.originalname}_${currentDate}`
 
-  const inputAssetName = `input_${videoFile.originalname}_${currentDate}`
+  const inputAssetName = `input_${amsIdentifier}`
   const jobInputAsset = await getOrCreateJobInputAsset(videoFile, inputAssetName)
 
-  const outputAssetName = `output_${videoFile.originalname}_${currentDate}`
+  const outputAssetName = `output_${amsIdentifier}`
   const jobOutputAsset = await createOutputAsset(outputAssetName)
 
-  const encodingJobName = `job_${videoFile.originalname}_${currentDate}`
-  let error, encodingJob
+  const encodingJobName = `job_${amsIdentifier}`
 
-  [error, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset, encodingJobName))
+  let encodingError, encodingJob
 
-  if (error) {
-    return 'None'
+  [encodingError, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset, encodingJobName))
+
+  return {
+    encodingState: encodingError ? 'None' : encodingJob.state,
+    amsIdentifier: amsIdentifier
   }
-
-  return encodingJob.state
 }
 
 const logInToAzure = async () => {
@@ -179,6 +180,120 @@ const submitEncodingJob = async (jobInputAsset, outputAsset, encodingJobName) =>
   )
 }
 
+const getEncodingJobResult = async (amsIdentifier) => {
+  if (!azureMediaServicesClient) {
+    const authResponse = await logInToAzure()
+    azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
+  }
+
+  const jobName = `job_${amsIdentifier}`
+  const outputAssetName = `output_${amsIdentifier}`
+  const inputAssetName = `input_${amsIdentifier}`
+  const locatorName = `locator_${amsIdentifier}`
+
+  const encodingJob = await azureMediaServicesClient.jobs.get(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    ENCODING_TRANSFORM_NAME,
+    jobName
+  )
+
+  let streamingUrls = []
+
+  if (encodingJob.state === 'Finished') {
+    let locator = await createStreamingLocator(outputAssetName, locatorName)
+
+    streamingUrls = await getStreamingUrls(locator.name)
+
+    // console.log('deleting jobs ...')
+    // const rest = await azureMediaServicesClient.jobs.deleteMethod(
+    //   RESOURCE_GROUP,
+    //   AMS_ACCOUNT_NAME,
+    //   ENCODING_TRANSFORM_NAME,
+    //   jobName
+    // )
+    // // await azureMediaServicesClient.assets.deleteMethod(resourceGroup, accountName, outputAsset.name);
+
+    // const r = await azureMediaServicesClient.assets.deleteMethod(
+    //   RESOURCE_GROUP,
+    //   AMS_ACCOUNT_NAME,
+    //   inputAssetName
+    // )
+  } else if (encodingJob.state === 'Error') {
+    console.log(`${encodingJob.name} failed. Error details:`)
+    console.log(encodingJob.outputs[0].error)
+  } else if (encodingJob.state === 'Canceled') {
+    console.log(`${encodingJob.name} was unexpectedly canceled.`)
+  } else {
+    console.log(`${encodingJob.name} is still in progress.  Current state is ${encodingJob.state}.`);
+  }
+
+  return {
+    encodingState: encodingJob.state === 'Finished' ? 'Closed' : encodingJob.state,
+    streamingUrls: streamingUrls
+  }
+}
+
+const createStreamingLocator = async (assetName, locatorName) => {
+  const streamingLocator = {
+    assetName: assetName,
+    // streamingPolicyName: 'Predefined_ClearStreamingOnly'
+    streamingPolicyName: 'Predefined_DownloadAndClearStreaming'
+  }
+
+  let locatorArray = await to(azureMediaServicesClient.streamingLocators.get(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    locatorName
+  ))
+
+  let locator = locatorArray[1]
+
+  if (locator.error) {
+    locator = await azureMediaServicesClient.streamingLocators.create(
+      RESOURCE_GROUP,
+      AMS_ACCOUNT_NAME,
+      locatorName,
+      streamingLocator
+    )
+  }
+
+  return locator
+}
+
+const getStreamingUrls = async (locatorName) => {
+  // Make sure the streaming endpoint is in the 'Running' state.
+  let streamingEndpoint = await azureMediaServicesClient.streamingEndpoints.get(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    'default'
+  )
+
+  let paths = await azureMediaServicesClient.streamingLocators.listPaths(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    locatorName
+  )
+
+  let streamingUrls = []
+
+  for (let i = 0; i < paths.downloadPaths.length; i++){
+    // let path = paths.streamingPaths[i].paths[0]
+    // const streamingUrl = 'https://'+ streamingEndpoint.hostName + path
+    // streamingUrls.push(streamingUrl)
+    // console.log(streamingUrl)
+
+    let path = paths.downloadPaths[i]
+    const downloadPath = 'https://' + streamingEndpoint.hostName + path
+    streamingUrls.push(downloadPath)
+
+    console.log(downloadPath)
+  }
+
+  return streamingUrls
+}
+
 module.exports = {
-  storeVideoFile
+  storeVideoFile,
+  getEncodingJobResult
 }
