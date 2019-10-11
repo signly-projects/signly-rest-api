@@ -13,9 +13,9 @@ exports.uploadVideo = async (req, res, next) => {
     res.status(422).send(req.fileValidationError.message)
   }
 
-  mediaBlock = await MediaBlocksService.addVideo(mediaBlock, req.file)
+  const encodingState = await AzureService.storeVideoFile(req.file)
 
-  const result = await AzureService.storeVideoFile(req.file)
+  mediaBlock = await MediaBlocksService.addVideo(mediaBlock, req.file, encodingState)
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }

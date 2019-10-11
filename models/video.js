@@ -10,6 +10,10 @@ const VideoSchema = new mongoose.Schema(
     videoFile: {
       type: Object,
       default: null
+    },
+    encodingState: {
+      type: String,
+      default: 'None'
     }
   },
   {

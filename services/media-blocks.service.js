@@ -66,12 +66,13 @@ exports.update = async (mediaBlock, newMediaBlock) => {
   return await mediaBlock.save()
 }
 
-exports.addVideo = async (mediaBlock, videoFile) => {
+exports.addVideo = async (mediaBlock, videoFile, encodingState) => {
   if (mediaBlock.video) {
     mediaBlock.video.videoFile = videoFile
+    mediaBlock.video.encodingState = encodingState
     mediaBlock.markModified('video.videoFile')
   } else {
-    mediaBlock.video = new Video({ videoFile: videoFile })
+    mediaBlock.video = new Video({ videoFile: videoFile, encodingState: encodingState })
   }
 
   return await mediaBlock.save()
