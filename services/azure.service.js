@@ -6,6 +6,8 @@ const { DefaultAzureCredential } = require('@azure/identity')
 const { BlobServiceClient, SharedKeyCredential } = require('@azure/storage-blob')
 const { AzureMediaServices } = require('@azure/arm-mediaservices')
 
+let { jobs } = require('~utils/jobs')
+
 const AAD_CLIENT_ID = process.env.AAD_CLIENT_ID
 const AAD_SECRET = process.env.AAD_SECRET
 const AAD_TENANT_ID = process.env.AAD_TENANT_ID
@@ -24,7 +26,7 @@ const ADAPTIVE_STREAMING_TRANSFORM_PRESET = {
 let azureMediaServicesClient
 let blobServiceClient
 
-const storeVideoFile = async (videoFile) => {
+const storeVideoFile = async (videoFile, mediaBlockId) => {
   const authResponse = await logInToAzure()
   const sharedKeyCredential = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
 
@@ -53,6 +55,17 @@ const storeVideoFile = async (videoFile) => {
   let encodingError, encodingJob
 
   [encodingError, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset, encodingJobName))
+
+  const job = await jobs.add(
+    {
+      amsIdentifier: amsIdentifier,
+      mediaBlockId: mediaBlockId
+    },
+    {
+      attempts: 5,
+      backoff: 10000
+    }
+  )
 
   return {
     encodingState: encodingError ? 'None' : encodingJob.state,
@@ -180,7 +193,7 @@ const submitEncodingJob = async (jobInputAsset, outputAsset, encodingJobName) =>
   )
 }
 
-const getEncodingJobResult = async (amsIdentifier) => {
+exports.getEncodingJobResult = async (amsIdentifier) => {
   if (!azureMediaServicesClient) {
     const authResponse = await logInToAzure()
     azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
@@ -198,39 +211,32 @@ const getEncodingJobResult = async (amsIdentifier) => {
     jobName
   )
 
-  let streamingUrls = []
+  let videoUri = null
 
   if (encodingJob.state === 'Finished') {
     let locator = await createStreamingLocator(outputAssetName, locatorName)
 
-    streamingUrls = await getStreamingUrls(locator.name)
+    videoUri = await getStreamingUrls(locator.name)
 
-    // console.log('deleting jobs ...')
-    // const rest = await azureMediaServicesClient.jobs.deleteMethod(
-    //   RESOURCE_GROUP,
-    //   AMS_ACCOUNT_NAME,
-    //   ENCODING_TRANSFORM_NAME,
-    //   jobName
-    // )
-    // // await azureMediaServicesClient.assets.deleteMethod(resourceGroup, accountName, outputAsset.name);
+    console.log('deleting jobs ...')
+    await azureMediaServicesClient.jobs.deleteMethod(
+      RESOURCE_GROUP,
+      AMS_ACCOUNT_NAME,
+      ENCODING_TRANSFORM_NAME,
+      jobName
+    )
+    // await azureMediaServicesClient.assets.deleteMethod(resourceGroup, accountName, outputAsset.name);
 
-    // const r = await azureMediaServicesClient.assets.deleteMethod(
-    //   RESOURCE_GROUP,
-    //   AMS_ACCOUNT_NAME,
-    //   inputAssetName
-    // )
-  } else if (encodingJob.state === 'Error') {
-    console.log(`${encodingJob.name} failed. Error details:`)
-    console.log(encodingJob.outputs[0].error)
-  } else if (encodingJob.state === 'Canceled') {
-    console.log(`${encodingJob.name} was unexpectedly canceled.`)
-  } else {
-    console.log(`${encodingJob.name} is still in progress.  Current state is ${encodingJob.state}.`);
+    await azureMediaServicesClient.assets.deleteMethod(
+      RESOURCE_GROUP,
+      AMS_ACCOUNT_NAME,
+      inputAssetName
+    )
   }
 
   return {
-    encodingState: encodingJob.state === 'Finished' ? 'Closed' : encodingJob.state,
-    streamingUrls: streamingUrls
+    encodingState: encodingJob.state === 'Finished' ? 'Ready' : encodingJob.state,
+    videoUri: videoUri
   }
 }
 
@@ -238,7 +244,7 @@ const createStreamingLocator = async (assetName, locatorName) => {
   const streamingLocator = {
     assetName: assetName,
     // streamingPolicyName: 'Predefined_ClearStreamingOnly'
-    streamingPolicyName: 'Predefined_DownloadAndClearStreaming'
+    streamingPolicyName: 'Predefined_DownloadOnly'
   }
 
   let locatorArray = await to(azureMediaServicesClient.streamingLocators.get(
@@ -275,25 +281,21 @@ const getStreamingUrls = async (locatorName) => {
     locatorName
   )
 
-  let streamingUrls = []
+  let videoUri = null
 
   for (let i = 0; i < paths.downloadPaths.length; i++){
-    // let path = paths.streamingPaths[i].paths[0]
-    // const streamingUrl = 'https://'+ streamingEndpoint.hostName + path
-    // streamingUrls.push(streamingUrl)
-    // console.log(streamingUrl)
-
-    let path = paths.downloadPaths[i]
+    const path = paths.downloadPaths[i]
     const downloadPath = 'https://' + streamingEndpoint.hostName + path
-    streamingUrls.push(downloadPath)
 
+    if (downloadPath.includes('_608x1080_') && downloadPath.endsWith('.mp4')) {
+      videoUri = downloadPath
+    }
     console.log(downloadPath)
   }
 
-  return streamingUrls
+  return videoUri
 }
 
 module.exports = {
-  storeVideoFile,
-  getEncodingJobResult
+  storeVideoFile
 }

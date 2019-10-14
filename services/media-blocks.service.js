@@ -1,9 +1,10 @@
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
 
-exports.findById = async (mediaBlockId) => {
+const findById = async (mediaBlockId) => {
   return MediaBlock.findById(mediaBlockId)
 }
+exports.findById = findById
 
 exports.findByNormalizedText = async (normalizedText) => {
   return MediaBlock.findOne({ normalizedText: normalizedText })
@@ -66,17 +67,36 @@ exports.update = async (mediaBlock, newMediaBlock) => {
   return await mediaBlock.save()
 }
 
-exports.addVideo = async (mediaBlock, videoFile, encodingState, amsIdentifier) => {
+exports.createOrUpdateVideo = async (mediaBlockId, videoFile, encodingState, amsIdentifier) => {
+  let mediaBlock = await findById(mediaBlockId)
+
   if (mediaBlock.video) {
     mediaBlock.video.videoFile = videoFile
     mediaBlock.video.encodingState = encodingState
     mediaBlock.video.amsIdentifier = amsIdentifier
-    mediaBlock.markModified('video.videoFile')
+    mediaBlock.markModified('video')
   } else {
     mediaBlock.video = new Video({
       videoFile: videoFile,
       encodingState: encodingState,
       amsIdentifier: amsIdentifier
+    })
+  }
+
+  return await mediaBlock.save()
+}
+
+exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
+  let mediaBlock = await findById(mediaBlockId)
+
+  if (mediaBlock.video) {
+    mediaBlock.video.encodingState = encodingState
+    mediaBlock.video.uri = videoUri
+    mediaBlock.markModified('video')
+  } else {
+    mediaBlock.video = new Video({
+      encodingState: encodingState,
+      uri: videoUri
     })
   }
 
