@@ -1,4 +1,3 @@
-const { deleteFile } = require('~utils/storage')
 const MediaBlocksService = require('~services/media-blocks.service')
 const AzureService = require('~services/azure.service')
 
@@ -30,6 +29,10 @@ exports.uploadVideo = async (req, res, next) => {
     res.status(422).send(req.fileValidationError.message)
   }
 
+  if (mediaBlock.amsIdentifier) {
+    await AzureService.deleteAsset(mediaBlock.amsIdentifier)
+  }
+
   const result = await AzureService.storeVideoFile(req.file, req.params.id)
   mediaBlock = await MediaBlocksService.createOrUpdateVideo(mediaBlock._id, req.file, result.encodingState, result.amsIdentifier)
 
@@ -43,9 +46,6 @@ exports.deleteVideo = async (req, res, next) => {
     return res.status(404).send('Media block with the given ID not found.')
   }
 
-  const videoFile = `video_${req.params.id}.mp4`
-
-  await deleteFile(videoFile)
   mediaBlock = await MediaBlocksService.deleteVideo(mediaBlock)
 
   res.status(200).send({ mediaBlock: mediaBlock })

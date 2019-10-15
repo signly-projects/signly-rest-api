@@ -1,10 +1,15 @@
 require('dotenv').config()
+const winston = require('winston')
 const to = require('await-to-js').default
 const Jobs = require('bull')
+
+const { deleteFile } = require('~utils/storage')
 const MediaBlocksService = require('~services/media-blocks.service')
 const AzureService = require('~services/azure.service')
 
 let jobs = new Jobs('jobs', process.env.REDIS_URI)
+const MAX_ATTEMPTS = 10
+const BACKOFF_TIME = 15000
 
 jobs.process(async (job) => {
   console.log('Job started', job.data.mediaBlockId, job.data.amsIdentifier)
@@ -16,21 +21,32 @@ jobs.process(async (job) => {
     return Promise.reject(new Error('Can\'t retrieve encoding job data'))
   }
 
-  await MediaBlocksService.updateVideoState(job.data.mediaBlockId, result.encodingState, result.videoUri)
-
-  console.log('State:', result.encodingState, result.videoUri)
-
   if (result.encodingState === 'Ready') {
     return Promise.resolve(result)
   } else {
-    return Promise.reject(new Error(`Video transcoding not ready. Status: ${result.encodingState}`))
+    return Promise.reject(result)
   }
 })
 
-// jobs.on('completed', job => {
-//   MediaBlocksService.updateVideoState(job.data.mediaBlockId, result.encodingState, videoUrl)
-// })
+jobs.on('completed', async (job, result) => {
+  console.log('Job completed', job.data.mediaBlockId, job.data.amsIdentifier)
+  await MediaBlocksService.updateVideoState(job.data.mediaBlockId, result.encodingState, result.videoUri)
+  await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
+
+  job.remove()
+})
+
+jobs.on('failed', async (job, result) => {
+  console.log('Job failed', job.data.mediaBlockId, job.data.amsIdentifier, result.encodingState)
+
+  if (result.encodingState === 'Error') {
+    job.remove()
+    winston.error('Azure Encoding Error.')
+  }
+})
 
 module.exports = {
-  jobs
+  jobs,
+  MAX_ATTEMPTS,
+  BACKOFF_TIME
 }

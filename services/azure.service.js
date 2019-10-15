@@ -6,7 +6,7 @@ const { DefaultAzureCredential } = require('@azure/identity')
 const { BlobServiceClient, SharedKeyCredential } = require('@azure/storage-blob')
 const { AzureMediaServices } = require('@azure/arm-mediaservices')
 
-let { jobs } = require('~utils/jobs')
+let { jobs, MAX_ATTEMPTS, BACKOFF_TIME } = require('~utils/jobs')
 
 const AAD_CLIENT_ID = process.env.AAD_CLIENT_ID
 const AAD_SECRET = process.env.AAD_SECRET
@@ -62,8 +62,8 @@ const storeVideoFile = async (videoFile, mediaBlockId) => {
       mediaBlockId: mediaBlockId
     },
     {
-      attempts: 5,
-      backoff: 10000
+      attempts: MAX_ATTEMPTS,
+      backoff: BACKOFF_TIME
     }
   )
 
@@ -193,6 +193,18 @@ const submitEncodingJob = async (jobInputAsset, outputAsset, encodingJobName) =>
   )
 }
 
+const deleteAsset = async (amsIdentifier) => {
+  const outputAssetName = `output_${amsIdentifier}`
+
+  const result = await azureMediaServicesClient.assets.deleteMethod(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    outputAssetName
+  )
+
+  return result
+}
+
 exports.getEncodingJobResult = async (amsIdentifier) => {
   if (!azureMediaServicesClient) {
     const authResponse = await logInToAzure()
@@ -218,14 +230,12 @@ exports.getEncodingJobResult = async (amsIdentifier) => {
 
     videoUri = await getStreamingUrls(locator.name)
 
-    console.log('deleting jobs ...')
     await azureMediaServicesClient.jobs.deleteMethod(
       RESOURCE_GROUP,
       AMS_ACCOUNT_NAME,
       ENCODING_TRANSFORM_NAME,
       jobName
     )
-    // await azureMediaServicesClient.assets.deleteMethod(resourceGroup, accountName, outputAsset.name);
 
     await azureMediaServicesClient.assets.deleteMethod(
       RESOURCE_GROUP,
@@ -297,5 +307,6 @@ const getStreamingUrls = async (locatorName) => {
 }
 
 module.exports = {
-  storeVideoFile
+  storeVideoFile,
+  deleteAsset
 }

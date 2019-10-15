@@ -1,3 +1,4 @@
+const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
 
@@ -74,12 +75,15 @@ exports.createOrUpdateVideo = async (mediaBlockId, videoFile, encodingState, ams
     mediaBlock.video.videoFile = videoFile
     mediaBlock.video.encodingState = encodingState
     mediaBlock.video.amsIdentifier = amsIdentifier
+    mediaBlock.status = 'untranslated'
+
     mediaBlock.markModified('video')
   } else {
     mediaBlock.video = new Video({
       videoFile: videoFile,
       encodingState: encodingState,
-      amsIdentifier: amsIdentifier
+      amsIdentifier: amsIdentifier,
+      status: 'untranslated',
     })
   }
 
@@ -90,6 +94,10 @@ exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
   let mediaBlock = await findById(mediaBlockId)
 
   if (mediaBlock.video) {
+    if (encodingState === 'Ready') {
+      mediaBlock.video.videoFile = null
+    }
+
     mediaBlock.video.encodingState = encodingState
     mediaBlock.video.uri = videoUri
     mediaBlock.markModified('video')
@@ -100,14 +108,27 @@ exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
     })
   }
 
+  if (videoUri) {
+    mediaBlock.status = 'translated'
+  } else {
+    mediaBlock.status = mediaBlock.status || 'untranslated'
+  }
+
   return await mediaBlock.save()
 }
 
 exports.deleteVideo = async (mediaBlock) => {
   if (mediaBlock.video) {
     mediaBlock.video.videoFile = null
-    mediaBlock.markModified('video.videoFile')
+    mediaBlock.video.encodingState = 'None'
+    mediaBlock.video.amsIdentifier = null
+    mediaBlock.video.uri = null
+    mediaBlock.markModified('video')
   }
+
+  mediaBlock.status = 'untranslated'
+
+  await deleteFile(`video_${mediaBlock._id}.mp4`)
 
   return await mediaBlock.save()
 }
