@@ -71,7 +71,7 @@ exports.update = async (mediaBlock, newMediaBlock) => {
 
 exports.createOrUpdateVideo = async (mediaBlockId, videoFile) => {
   let mediaBlock = await findById(mediaBlockId)
-  const result = await AzureService.storeVideoFile(mediaBlockId._id, videoFile)
+  const result = await AzureService.storeVideoFile(mediaBlockId, videoFile)
 
   if (mediaBlock.video) {
     mediaBlock.video.videoFile = videoFile

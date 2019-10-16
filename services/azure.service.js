@@ -2,7 +2,6 @@ require('dotenv').config()
 const url = require('url')
 const to = require('await-to-js').default
 const msRestNodeAuth = require('@azure/ms-rest-nodeauth')
-const { DefaultAzureCredential } = require('@azure/identity')
 const { BlobServiceClient, SharedKeyCredential } = require('@azure/storage-blob')
 const { AzureMediaServices } = require('@azure/arm-mediaservices')
 
@@ -23,15 +22,16 @@ const ADAPTIVE_STREAMING_TRANSFORM_PRESET = {
   presetName: 'ContentAdaptiveMultipleBitrateMP4'
 }
 
+let authResponse
 let azureMediaServicesClient
 let blobServiceClient
 
 const storeVideoFile = async (mediaBlockId, videoFile) => {
-  const authResponse = await logInToAzure()
+  if (!authResponse) {
+    authResponse = await logInToAzure()
+  }
+
   const sharedKeyCredential = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
-
-  const defaultAzureCredential = new DefaultAzureCredential()
-
   azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
 
   blobServiceClient = new BlobServiceClient(
@@ -205,9 +205,10 @@ const submitEncodingJob = async (jobInputAsset, outputAssetName, encodingJobName
 
 exports.getEncodingJobResult = async (amsIdentifier) => {
   if (!azureMediaServicesClient) {
-    const authResponse = await logInToAzure()
-    azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
+    authResponse = await logInToAzure()
   }
+
+  azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
 
   const jobName = `job_${amsIdentifier}`
   const outputAssetName = `output_${amsIdentifier}`

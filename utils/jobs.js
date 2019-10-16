@@ -42,6 +42,12 @@ jobs.on('failed', async (job, result) => {
 
   if (result.encodingState === 'Error') {
     winston.error('Azure Encoding Error.')
+    await job.discard()
+    await job.moveToFailed(new Error(`Azure Encoding Error. Job: job_${job.data.amsIdentifier}`))
+  }
+
+  if (job.attemptsMade === MAX_ATTEMPTS) {
+    await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
   }
 })
 
