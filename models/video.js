@@ -18,7 +18,10 @@ const VideoSchema = new mongoose.Schema(
     amsIdentifier: {
       type: String,
       default: ''
-    }
+    },
+    amsIdentifiers: [{
+      type: String
+    }]
   },
   {
     timestamps: true

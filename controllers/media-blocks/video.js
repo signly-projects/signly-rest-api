@@ -29,12 +29,7 @@ exports.uploadVideo = async (req, res, next) => {
     res.status(422).send(req.fileValidationError.message)
   }
 
-  if (mediaBlock.amsIdentifier) {
-    await AzureService.deleteAsset(mediaBlock.amsIdentifier)
-  }
-
-  const result = await AzureService.storeVideoFile(req.file, req.params.id)
-  mediaBlock = await MediaBlocksService.createOrUpdateVideo(mediaBlock._id, req.file, result.encodingState, result.amsIdentifier)
+  mediaBlock = await MediaBlocksService.createOrUpdateVideo(mediaBlock._id, req.file)
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }

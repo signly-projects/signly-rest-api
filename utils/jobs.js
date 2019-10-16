@@ -21,6 +21,8 @@ jobs.process(async (job) => {
     return Promise.reject(new Error('Can\'t retrieve encoding job data'))
   }
 
+  await MediaBlocksService.updateVideoState(job.data.mediaBlockId, result.encodingState, result.videoUri)
+
   if (result.encodingState === 'Ready') {
     return Promise.resolve(result)
   } else {
@@ -28,19 +30,17 @@ jobs.process(async (job) => {
   }
 })
 
-jobs.on('completed', async (job, result) => {
-  console.log('Job completed', job.data.mediaBlockId, job.data.amsIdentifier)
-  await MediaBlocksService.updateVideoState(job.data.mediaBlockId, result.encodingState, result.videoUri)
+jobs.on('completed', async (job) => {
+  console.log('Job completed: ', `job_${job.data.amsIdentifier}`)
   await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
 
   job.remove()
 })
 
 jobs.on('failed', async (job, result) => {
-  console.log('Job failed', job.data.mediaBlockId, job.data.amsIdentifier, result.encodingState)
+  console.log('Job failed: ', `job_${job.data.amsIdentifier} (State: ${result.encodingState})`)
 
   if (result.encodingState === 'Error') {
-    job.remove()
     winston.error('Azure Encoding Error.')
   }
 })

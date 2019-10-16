@@ -26,7 +26,7 @@ const ADAPTIVE_STREAMING_TRANSFORM_PRESET = {
 let azureMediaServicesClient
 let blobServiceClient
 
-const storeVideoFile = async (videoFile, mediaBlockId) => {
+const storeVideoFile = async (mediaBlockId, videoFile) => {
   const authResponse = await logInToAzure()
   const sharedKeyCredential = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
 
@@ -54,7 +54,7 @@ const storeVideoFile = async (videoFile, mediaBlockId) => {
 
   let encodingError, encodingJob
 
-  [encodingError, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset, encodingJobName))
+  [encodingError, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset.name, encodingJobName))
 
   const job = await jobs.add(
     {
@@ -149,7 +149,7 @@ const appendFileToAsset = async (videoFile, assetName) => {
 }
 
 const getOrCreateJobInputAsset = async (videoFile, inputAssetName) => {
-  const asset = await createInputAsset(videoFile, inputAssetName)
+  const asset = await createInputAsset(inputAssetName)
 
   await appendFileToAsset(videoFile, inputAssetName)
 
@@ -159,12 +159,10 @@ const getOrCreateJobInputAsset = async (videoFile, inputAssetName) => {
   }
 }
 
-const createInputAsset = async (videoFile, assetName) => {
-  let asset = await azureMediaServicesClient.assets.createOrUpdate(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName, {
+const createInputAsset = async (assetName) => {
+  return await azureMediaServicesClient.assets.createOrUpdate(RESOURCE_GROUP, AMS_ACCOUNT_NAME, assetName, {
     description: assetName,
   })
-
-  return asset
 }
 
 const createOutputAsset = async (assetName) => {
@@ -173,11 +171,11 @@ const createOutputAsset = async (assetName) => {
   })
 }
 
-const submitEncodingJob = async (jobInputAsset, outputAsset, encodingJobName) => {
+const submitEncodingJob = async (jobInputAsset, outputAssetName, encodingJobName) => {
   let jobOutputs = [
     {
       odatatype: '#Microsoft.Media.JobOutputAsset',
-      assetName: outputAsset.name
+      assetName: outputAssetName
     }
   ]
 
@@ -193,17 +191,17 @@ const submitEncodingJob = async (jobInputAsset, outputAsset, encodingJobName) =>
   )
 }
 
-const deleteAsset = async (amsIdentifier) => {
-  const outputAssetName = `output_${amsIdentifier}`
-
-  const result = await azureMediaServicesClient.assets.deleteMethod(
-    RESOURCE_GROUP,
-    AMS_ACCOUNT_NAME,
-    outputAssetName
-  )
-
-  return result
-}
+// const deleteAsset = async (amsIdentifier) => {
+//   const outputAssetName = `output_${amsIdentifier}`
+//
+//   const result = await azureMediaServicesClient.assets.deleteMethod(
+//     RESOURCE_GROUP,
+//     AMS_ACCOUNT_NAME,
+//     outputAssetName
+//   )
+//
+//   return result
+// }
 
 exports.getEncodingJobResult = async (amsIdentifier) => {
   if (!azureMediaServicesClient) {
@@ -307,6 +305,5 @@ const getStreamingUrls = async (locatorName) => {
 }
 
 module.exports = {
-  storeVideoFile,
-  deleteAsset
+  storeVideoFile
 }

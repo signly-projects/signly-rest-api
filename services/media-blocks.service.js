@@ -1,6 +1,7 @@
 const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
+const AzureService = require('~services/azure.service')
 
 const findById = async (mediaBlockId) => {
   return MediaBlock.findById(mediaBlockId)
@@ -68,21 +69,24 @@ exports.update = async (mediaBlock, newMediaBlock) => {
   return await mediaBlock.save()
 }
 
-exports.createOrUpdateVideo = async (mediaBlockId, videoFile, encodingState, amsIdentifier) => {
+exports.createOrUpdateVideo = async (mediaBlockId, videoFile) => {
   let mediaBlock = await findById(mediaBlockId)
+  const result = await AzureService.storeVideoFile(mediaBlockId._id, videoFile)
 
   if (mediaBlock.video) {
     mediaBlock.video.videoFile = videoFile
-    mediaBlock.video.encodingState = encodingState
-    mediaBlock.video.amsIdentifier = amsIdentifier
+    mediaBlock.video.encodingState = result.encodingState
+    mediaBlock.video.amsIdentifier = result.amsIdentifier
+    mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
     mediaBlock.status = 'untranslated'
 
     mediaBlock.markModified('video')
   } else {
     mediaBlock.video = new Video({
       videoFile: videoFile,
-      encodingState: encodingState,
-      amsIdentifier: amsIdentifier,
+      encodingState: result.encodingState,
+      amsIdentifier: result.amsIdentifier,
+      amsIdentifiers: [result.amsIdentifier],
       status: 'untranslated',
     })
   }
