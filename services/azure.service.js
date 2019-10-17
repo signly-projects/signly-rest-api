@@ -191,20 +191,41 @@ const submitEncodingJob = async (jobInputAsset, outputAssetName, encodingJobName
   )
 }
 
-// const deleteAsset = async (amsIdentifier) => {
-//   const outputAssetName = `output_${amsIdentifier}`
-//
-//   const result = await azureMediaServicesClient.assets.deleteMethod(
-//     RESOURCE_GROUP,
-//     AMS_ACCOUNT_NAME,
-//     outputAssetName
-//   )
-//
-//   return result
-// }
+exports.deleteAssets = async (amsIdentifier) => {
+  if (!authResponse) {
+    authResponse = await logInToAzure()
+  }
+
+  azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
+
+  const jobName = `job_${amsIdentifier}`
+  const inputAssetName = `input_${amsIdentifier}`
+  const outputAssetName = `output_${amsIdentifier}`
+
+  await azureMediaServicesClient.jobs.deleteMethod(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    ENCODING_TRANSFORM_NAME,
+    jobName
+  )
+
+  await azureMediaServicesClient.assets.deleteMethod(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    inputAssetName
+  )
+
+  await azureMediaServicesClient.assets.deleteMethod(
+    RESOURCE_GROUP,
+    AMS_ACCOUNT_NAME,
+    outputAssetName
+  )
+
+  return 'Done'
+}
 
 exports.getEncodingJobResult = async (amsIdentifier) => {
-  if (!azureMediaServicesClient) {
+  if (!authResponse) {
     authResponse = await logInToAzure()
   }
 

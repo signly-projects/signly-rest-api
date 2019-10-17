@@ -25,30 +25,34 @@ jobs.process(async (job) => {
 
   if (result.encodingState === 'Ready') {
     return Promise.resolve(result)
+  } else if (result.encodingState === 'Error') {
+    console.log('Cancelling job ' + job.id)
+    await job.discard()
+    await job.moveToFailed({message: 'Job is cancelled by the user request'}, true)
+
+    await to(AzureService.deleteAssets(job.data.amsIdentifier))
   } else {
     return Promise.reject(result)
   }
 })
 
 jobs.on('completed', async (job) => {
-  console.log('Job completed: ', `job_${job.data.amsIdentifier}`)
+  console.log('Job completed:', `job_${job.data.amsIdentifier}`)
   await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
-
-  job.remove()
+  //
+  // await job.remove()
 })
 
 jobs.on('failed', async (job, result) => {
-  console.log('Job failed: ', `job_${job.data.amsIdentifier} (State: ${result.encodingState})`)
-
-  if (result.encodingState === 'Error') {
-    winston.error('Azure Encoding Error.')
-    await job.discard()
-    await job.moveToFailed(new Error(`Azure Encoding Error. Job: job_${job.data.amsIdentifier}`))
-  }
+  console.log('Job failed:', `job_${job.data.amsIdentifier} (State: ${result.encodingState})`)
 
   if (job.attemptsMade === MAX_ATTEMPTS) {
     await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
   }
+})
+
+jobs.on('error', (error) => {
+  console.log(error)
 })
 
 module.exports = {
