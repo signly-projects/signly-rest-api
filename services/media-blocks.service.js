@@ -46,50 +46,29 @@ exports.findOrCreateMediaBlocks = async (newPage, page) => {
   return mediaBlocks
 }
 
-exports.update = async (mediaBlock, newMediaBlock) => {
-  if (newMediaBlock.hasOwnProperty('video')) {
-    if (newMediaBlock.video) {
-      if (mediaBlock.video) {
-        mediaBlock.video.uri = newMediaBlock.video.uri
-        mediaBlock.markModified('video.uri')
-      } else {
-        mediaBlock.video = new Video({ uri: newMediaBlock.video.uri })
-      }
+exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
+  if (videoFile) {
+    const result = await AzureService.storeVideoFile(mediaBlock._id, videoFile)
+
+    if (mediaBlock.video) {
+      mediaBlock.video.videoFile = videoFile
+      mediaBlock.video.encodingState = result.encodingState
+      mediaBlock.video.amsIdentifier = result.amsIdentifier
+      mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
+      mediaBlock.status = 'untranslated'
+
+      mediaBlock.markModified('video')
+    } else {
+      mediaBlock.video = new Video({
+        videoFile: videoFile,
+        encodingState: result.encodingState,
+        amsIdentifier: result.amsIdentifier,
+        amsIdentifiers: [result.amsIdentifier]
+      })
     }
   }
 
   mediaBlock.bslScript = newMediaBlock.bslScript
-
-  if (mediaBlock.video && mediaBlock.video.uri) {
-    mediaBlock.status = 'translated'
-  } else {
-    mediaBlock.status = newMediaBlock.status || 'untranslated'
-  }
-
-  return await mediaBlock.save()
-}
-
-exports.createOrUpdateVideo = async (mediaBlockId, videoFile) => {
-  let mediaBlock = await findById(mediaBlockId)
-  const result = await AzureService.storeVideoFile(mediaBlockId, videoFile)
-
-  if (mediaBlock.video) {
-    mediaBlock.video.videoFile = videoFile
-    mediaBlock.video.encodingState = result.encodingState
-    mediaBlock.video.amsIdentifier = result.amsIdentifier
-    mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
-    mediaBlock.status = 'untranslated'
-
-    mediaBlock.markModified('video')
-  } else {
-    mediaBlock.video = new Video({
-      videoFile: videoFile,
-      encodingState: result.encodingState,
-      amsIdentifier: result.amsIdentifier,
-      amsIdentifiers: [result.amsIdentifier],
-      status: 'untranslated',
-    })
-  }
 
   return await mediaBlock.save()
 }

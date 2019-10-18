@@ -43,7 +43,7 @@ function validateMediaBlock (mediaBlock, type = 'create') {
   const schema = {
     rawText: type === 'create' ? Joi.string().required() : Joi.string(),
     normalizedText: Joi.string(),
-    bslScript: Joi.string(),
+    bslScript: Joi.string().allow(''),
     status: Joi.string(),
     video: Joi.object(videoSchema).allow(null).allow('')
   }

@@ -48,6 +48,7 @@ jobs.on('failed', async (job, result) => {
 
   if (job.attemptsMade === MAX_ATTEMPTS) {
     await deleteFile(`video_${job.data.mediaBlockId}.mp4`)
+    await MediaBlocksService.updateVideoState(job.data.mediaBlockId, 'Timed Out')
   }
 })
 

@@ -224,7 +224,7 @@ exports.deleteAssets = async (amsIdentifier) => {
   return 'Done'
 }
 
-exports.getEncodingJobResult = async (amsIdentifier) => {
+const getEncodingJobResult = async (amsIdentifier) => {
   if (!authResponse) {
     authResponse = await logInToAzure()
   }
@@ -269,6 +269,7 @@ exports.getEncodingJobResult = async (amsIdentifier) => {
     videoUri: videoUri
   }
 }
+exports.getEncodingJobResult = getEncodingJobResult
 
 const createStreamingLocator = async (assetName, locatorName) => {
   const streamingLocator = {
@@ -298,7 +299,6 @@ const createStreamingLocator = async (assetName, locatorName) => {
 }
 
 const getStreamingUrls = async (locatorName) => {
-  // Make sure the streaming endpoint is in the 'Running' state.
   let streamingEndpoint = await azureMediaServicesClient.streamingEndpoints.get(
     RESOURCE_GROUP,
     AMS_ACCOUNT_NAME,
@@ -327,5 +327,6 @@ const getStreamingUrls = async (locatorName) => {
 }
 
 module.exports = {
-  storeVideoFile
+  storeVideoFile,
+  getEncodingJobResult
 }
