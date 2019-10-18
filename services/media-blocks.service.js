@@ -52,6 +52,7 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
 
     if (mediaBlock.video) {
       mediaBlock.video.videoFile = videoFile
+      mediaBlock.video.uri = null
       mediaBlock.video.encodingState = result.encodingState
       mediaBlock.video.amsIdentifier = result.amsIdentifier
       mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
