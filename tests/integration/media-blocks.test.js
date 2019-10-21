@@ -86,7 +86,6 @@ describe('/api/media-blocks', () => {
     let id
     let status
     let video
-    let videoUri
 
     const exec = async () => {
       return await request(server)
@@ -107,14 +106,6 @@ describe('/api/media-blocks', () => {
       video = { uri: videoUriOne }
     })
 
-    it('should return 422 if video uri is not valid', async () => {
-      video = { uri: 'not.a.valid.uri' }
-
-      const res = await exec()
-
-      expect(res.status).toBe(422)
-    })
-
     it('should return 404 if id is invalid', async () => {
       id = 1
 
@@ -131,42 +122,13 @@ describe('/api/media-blocks', () => {
       expect(res.status).toBe(404)
     })
 
-    it('should update the media block if input is valid', async () => {
-      await exec()
-
-      const updatedMediaBlock = await MediaBlock.findById(id)
-
-      expect(updatedMediaBlock.video).toMatchObject({
-        uri: videoUriOne
-      })
-    })
-
     it('should return the updated media block if it is valid', async () => {
       const res = await exec()
 
       expect(res.body.mediaBlock).toHaveProperty('_id')
       expect(res.body.mediaBlock).toHaveProperty('rawText', rawTextOne)
       expect(res.body.mediaBlock).toHaveProperty('normalizedText', rawTextOne.toLowerCase())
-      expect(res.body.mediaBlock).toHaveProperty('video.uri')
       expect(res.body.mediaBlock).toHaveProperty('status')
-    })
-
-    it('should allow to add empty video url to media block and set status to untranslated', async () => {
-      video = { uri: '' }
-
-      const res = await exec()
-
-      expect(res.body.mediaBlock).toHaveProperty('video.uri', '')
-      expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
-    })
-
-    it('should allow to add null video url to media block and set status to untranslated', async () => {
-      video = { uri: null }
-
-      const res = await exec()
-
-      expect(res.body.mediaBlock).toHaveProperty('video.uri', null)
-      expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
     })
 
     it('should allow a null video object to media block and set status to untranslated', async () => {
@@ -176,28 +138,6 @@ describe('/api/media-blocks', () => {
 
       expect(res.body.mediaBlock).not.toHaveProperty('video')
       expect(res.body.mediaBlock).toHaveProperty('status', 'untranslated')
-    })
-
-    it('should allow to update a video uri of a media block', async () => {
-      video = { uri: videoUriTwo }
-
-      const res = await exec()
-
-      expect(res.body.mediaBlock).toHaveProperty('video.uri', videoUriTwo)
-      expect(res.body.mediaBlock).toHaveProperty('status', 'translated')
-    })
-
-    it('should create a new video object in media block in one does not exist', async () => {
-      video = null
-
-      await exec()
-
-      video = { uri: videoUriTwo }
-
-      const res = await exec()
-
-      expect(res.body.mediaBlock).toHaveProperty('video.uri', videoUriTwo)
-      expect(res.body.mediaBlock).toHaveProperty('status', 'translated')
     })
   })
 })
