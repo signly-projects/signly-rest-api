@@ -1,7 +1,8 @@
+require('module-alias/register')
 const request = require('supertest')
 const mongoose = require('mongoose')
-const { Page } = require('../../models/page')
-const { MediaBlock } = require('../../models/media-block')
+const { Page } = require('~models/page')
+const { MediaBlock } = require('~models/media-block')
 
 let server
 
@@ -314,8 +315,6 @@ describe('/api/pages', () => {
     beforeEach(async () => {
       mediaBlockOne = new MediaBlock({ rawText: rawTextOne, normalizedText: rawTextOne.toLowerCase() })
       mediaBlockOne = await mediaBlockOne.save()
-
-      console.log(mediaBlockOne._id.toString())
 
       // We need to include the normalizedText because it's our unique identifier for a media block
       page = new Page({ uri: lloydsUri, mediaBlocks: [mediaBlockOne._id.toString()] })

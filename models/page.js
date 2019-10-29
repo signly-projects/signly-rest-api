@@ -3,8 +3,7 @@ Joi.objectId = require('joi-objectid')(Joi)
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const { SiteSchema } = require('./site')
-const { MediaBlockSchema } = require('./media-block')
+const { SiteSchema } = require('~models/site')
 
 const PageSchema = new Schema(
   {

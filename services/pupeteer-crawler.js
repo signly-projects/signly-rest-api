@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer')
 const cheerio = require('cheerio')
 const winston = require('winston')
 
-let ExternalPage = require('../models/external-page')
+let ExternalPage = require('~models/external-page')
 
 const config = {
   selectors: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'p', 'td', 'em', 'dt', 'dd', 'a'],

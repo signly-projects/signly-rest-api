@@ -19,6 +19,11 @@ const MediaBlockSchema = new mongoose.Schema(
     persisted: {
       type: Boolean,
       default: true
+    },
+    status: {
+      type: String,
+      enum: ['untranslated', 'translating', 'translated'],
+      default: 'untranslated'
     }
   },
   {
@@ -33,6 +38,7 @@ function validateMediaBlock (mediaBlock, type = 'create') {
     rawText: type === 'create' ? Joi.string().required() : Joi.string(),
     normalizedText: Joi.string(),
     bslScript: Joi.string(),
+    status: Joi.string(),
     videoUri: Joi.string().uri().allow('', null)
   }
 
