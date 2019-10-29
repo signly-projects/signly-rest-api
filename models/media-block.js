@@ -1,6 +1,8 @@
 const Joi = require('joi')
 const mongoose = require('mongoose')
 
+const { VideoSchema } = require('~models/video')
+
 const MediaBlockSchema = new mongoose.Schema(
   {
     rawText: {
@@ -13,8 +15,8 @@ const MediaBlockSchema = new mongoose.Schema(
     bslScript: {
       type: String
     },
-    videoUri: {
-      type: String
+    video: {
+      type: VideoSchema
     },
     persisted: {
       type: Boolean,
@@ -37,9 +39,9 @@ function validateMediaBlock (mediaBlock, type = 'create') {
   const schema = {
     rawText: type === 'create' ? Joi.string().required() : Joi.string(),
     normalizedText: Joi.string(),
-    bslScript: Joi.string(),
+    bslScript: Joi.string().allow(''),
     status: Joi.string(),
-    videoUri: Joi.string().uri().allow('', null)
+    video: Joi.object().allow(null).allow('')
   }
 
   return Joi.validate(mediaBlock, schema)

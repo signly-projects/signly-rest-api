@@ -23,12 +23,18 @@ exports.getMediaBlockByNormalizedText = async (req, res, next) => {
 }
 
 exports.patchMediaBlock = async (req, res, next) => {
-  const newMediaBlock = req.body.mediaBlock
+  const newMediaBlock = {
+    bslScript: req.body.bslScript
+  }
 
   const { error } = validateMediaBlock(newMediaBlock, 'patch')
 
   if (error) {
     return res.status(422).send(error.details[0].message)
+  }
+
+  if (req.fileValidationError) {
+    return res.status(422).send(req.fileValidationError.message)
   }
 
   let mediaBlock = await MediaBlocksService.findById(req.params.id)
@@ -37,7 +43,7 @@ exports.patchMediaBlock = async (req, res, next) => {
     return res.status(404).send('Media block with the given ID not found.')
   }
 
-  mediaBlock = await MediaBlocksService.update(mediaBlock, newMediaBlock)
+  mediaBlock = await MediaBlocksService.update(mediaBlock, newMediaBlock, req.file)
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }
