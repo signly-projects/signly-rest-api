@@ -13,7 +13,8 @@ const MediaBlockSchema = new mongoose.Schema(
       type: String
     },
     bslScript: {
-      type: String
+      type: String,
+      default: ''
     },
     video: {
       type: VideoSchema

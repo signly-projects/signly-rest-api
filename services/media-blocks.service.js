@@ -18,7 +18,10 @@ exports.findOrCreate = async (newMediaBlock) => {
   if (!mediaBlock) {
     mediaBlock = new MediaBlock({
       normalizedText: newMediaBlock.rawText.toLowerCase(),
-      rawText: newMediaBlock.rawText
+      rawText: newMediaBlock.rawText,
+      bslScript: newMediaBlock.bslScript || '',
+      status: newMediaBlock.status || 'untranslated',
+      video: newMediaBlock.video || null
     })
     mediaBlock = await mediaBlock.save()
   }
