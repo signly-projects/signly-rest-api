@@ -24,7 +24,7 @@
 
         if (mediaBlock.videoUri) {
           video['uri'] = mediaBlock.videoUri
-          video['encodedState'] = 'Ready'
+          video['encodingState'] = 'Ready'
         } else if (mediaBlock.video && mediaBlock.video.uri) {
           video = Object.assign({}, video, mediaBlock.video)
         } else {
@@ -44,6 +44,8 @@
           page: webPage
         }
       })
+
+      console.log(' ->', page.uri)
 
       return page
     } catch (error) {
