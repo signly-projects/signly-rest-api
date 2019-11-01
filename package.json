@@ -9,7 +9,8 @@
     "enc-config": "multi-encrypt enc",
     "dec-config": "multi-encrypt dec",
     "test": "PORT=3001 jest --detectOpenHandles",
-    "test:watch": "PORT=3001 jest --watchAll --verbose --detectOpenHandles"
+    "test:watch": "PORT=3001 jest --watchAll --verbose --detectOpenHandles",
+    "migrate": "node tasks/migrate-media-blocks.js"
   },
   "repository": {
     "type": "git",
