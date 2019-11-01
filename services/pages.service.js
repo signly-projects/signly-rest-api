@@ -32,6 +32,7 @@ exports.findById = async (pageId, withMediaBlocks = false) => {
 
 exports.create = async (newPage, mediaBlocks) => {
   let page = new Page({
+    requested: newPage.requested,
     enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
     title: newPage.title,
     uri: newPage.uri,
