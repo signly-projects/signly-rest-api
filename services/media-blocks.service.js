@@ -18,7 +18,10 @@ exports.findOrCreate = async (newMediaBlock) => {
   if (!mediaBlock) {
     mediaBlock = new MediaBlock({
       normalizedText: newMediaBlock.rawText.toLowerCase(),
-      rawText: newMediaBlock.rawText
+      rawText: newMediaBlock.rawText,
+      bslScript: newMediaBlock.bslScript || '',
+      status: newMediaBlock.status || 'untranslated',
+      video: newMediaBlock.video || null
     })
     mediaBlock = await mediaBlock.save()
   }
@@ -65,6 +68,22 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
         encodingState: result.encodingState,
         amsIdentifier: result.amsIdentifier,
         amsIdentifiers: [result.amsIdentifier]
+      })
+    }
+  } else if (newMediaBlock.video) {
+    if (mediaBlock.video) {
+      mediaBlock.video.videoFile = newMediaBlock.videoFile || mediaBlock.video.videoFile
+      mediaBlock.video.uri = newMediaBlock.video.uri || mediaBlock.video.uri
+      mediaBlock.video.encodingState = newMediaBlock.video.uri ? 'Ready' : 'None'
+      mediaBlock.video.amsIdentifier = mediaBlock.video.amsIdentifier || ''
+      mediaBlock.video.amsIdentifiers = mediaBlock.video.amsIdentifiers || []
+      mediaBlock.status =  newMediaBlock.video.uri ? 'translated' : 'untranslated'
+
+      mediaBlock.markModified('video')
+    } else {
+      mediaBlock.video = new Video({
+        uri: newMediaBlock.video.uri || '',
+        encodingState: newMediaBlock.video.uri ? 'Ready' : 'None'
       })
     }
   }

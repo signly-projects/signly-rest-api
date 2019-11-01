@@ -24,7 +24,9 @@ exports.getMediaBlockByNormalizedText = async (req, res, next) => {
 
 exports.patchMediaBlock = async (req, res, next) => {
   const newMediaBlock = {
-    bslScript: req.body.bslScript
+    bslScript: req.body.bslScript,
+    status: req.body.status,
+    video: req.body.video
   }
 
   const { error } = validateMediaBlock(newMediaBlock, 'patch')
