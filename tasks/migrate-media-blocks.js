@@ -1,7 +1,7 @@
 (async () => {
   const axios = require('axios')
 
-  const ORIGIN_SIGNLY_API_URL = 'https://signly-dev.azurewebsites.net/api'
+  const ORIGIN_SIGNLY_API_URL = 'https://signly.azurewebsites.net/api'
   const TARGET_SIGNLY_API_URL = 'http://localhost:3030/api'
 
   console.log(`Fetching data from '${ORIGIN_SIGNLY_API_URL}' ...`)
