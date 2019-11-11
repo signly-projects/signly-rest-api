@@ -1,20 +1,9 @@
 (async () => {
   const axios = require('axios')
+  const fs = require('fs')
 
   const ORIGIN_SIGNLY_API_URL = 'https://signly.azurewebsites.net/api'
   const TARGET_SIGNLY_API_URL = 'http://localhost:3030/api'
-
-  console.log(`Fetching data from '${ORIGIN_SIGNLY_API_URL}' ...`)
-
-  const { data: { pages }} = await axios({
-    url: `${ORIGIN_SIGNLY_API_URL}/pages`,
-    params: {
-      withMediaBlocks: true
-    },
-    method: 'get'
-  })
-
-  console.log(`Uploading data to '${TARGET_SIGNLY_API_URL}' ...`)
 
   const uploadPage = async (webPage) => {
     const { requested, enabled, uri, title, mediaBlocks } = webPage
@@ -53,19 +42,41 @@
       try {
         const result = await uploadHandler(page)
         results.push({
-          uri: result.data.page.uri,
+          uri: page.uri,
           status: result.status
         })
       } catch (error) {
         results.push({
           uri: page.uri,
-          status: error.response.status,
-          error: error.response.data
+          status: error.status,
+          error: error.message
         })
       }
     }
     return results
   }
+
+  const storeMigrationData = (data, path) => {
+    try {
+      fs.writeFileSync(path, JSON.stringify(data))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  console.log(`Fetching data from '${ORIGIN_SIGNLY_API_URL}' ...`)
+
+  const { data: { pages }} = await axios({
+    url: `${ORIGIN_SIGNLY_API_URL}/pages`,
+    params: {
+      withMediaBlocks: true
+    },
+    method: 'get'
+  })
+
+  storeMigrationData(pages, `tmp/migration_${Date.now()}.json`)
+
+  console.log(`Uploading data to '${TARGET_SIGNLY_API_URL}' ...`)
 
   uploadAllPages(pages, uploadPage)
     .then((result) => {

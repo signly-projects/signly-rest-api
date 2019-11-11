@@ -29,6 +29,8 @@ node_modules/
 # Videos upload folder
 uploads/
 
+# Temp folder
+tmp/
 
 # Secrets - Handled by multi-encrypt
 config/dev_local.json
