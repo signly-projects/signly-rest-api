@@ -8,7 +8,22 @@ exports.findAll = async (query) => {
   }
 
   if (query.withMediaBlocks) {
-    return await Page.find().populate('mediaBlocks')
+    let pages = await Page.find().sort(options.sort).populate({
+      path: 'mediaBlocks',
+      options: {
+        sort: { updatedAt: 'asc' }
+      }
+    })
+
+    if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
+      pages.forEach(page => {
+        page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.status === 'untranslated')
+      })
+
+      pages = pages.filter(page => page.mediaBlocks.length > 0)
+    }
+
+    return pages
   }
 
   return await Page.find().sort(options.sort)

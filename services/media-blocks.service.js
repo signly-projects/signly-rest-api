@@ -74,10 +74,10 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
     if (mediaBlock.video) {
       mediaBlock.video.videoFile = newMediaBlock.videoFile || mediaBlock.video.videoFile
       mediaBlock.video.uri = newMediaBlock.video.uri || mediaBlock.video.uri
-      mediaBlock.video.encodingState = newMediaBlock.video.uri ? 'Ready' : 'None'
+      mediaBlock.video.encodingState = newMediaBlock.video.encodingState || mediaBlock.video.encodingState
       mediaBlock.video.amsIdentifier = mediaBlock.video.amsIdentifier || ''
       mediaBlock.video.amsIdentifiers = mediaBlock.video.amsIdentifiers || []
-      mediaBlock.status =  newMediaBlock.video.uri ? 'translated' : 'untranslated'
+      mediaBlock.status = newMediaBlock.status || mediaBlock.status
 
       mediaBlock.markModified('video')
     } else {
@@ -88,7 +88,7 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
     }
   }
 
-  mediaBlock.bslScript = newMediaBlock.bslScript
+  mediaBlock.bslScript = newMediaBlock.bslScript || mediaBlock.bslScript
 
   return await mediaBlock.save()
 }

@@ -21,6 +21,7 @@ const ADAPTIVE_STREAMING_TRANSFORM_PRESET = {
   odatatype: '#Microsoft.Media.BuiltInStandardEncoderPreset',
   presetName: 'ContentAdaptiveMultipleBitrateMP4'
 }
+const ENV = process.env.NODE_ENV
 
 let authResponse
 let azureMediaServicesClient
@@ -39,24 +40,22 @@ const storeVideoFile = async (mediaBlockId, videoFile) => {
     sharedKeyCredential
   )
 
-  const encodingTransform = await getOrCreateTransform()
+  await createTransform()
 
   const currentDate = new Date().getTime()
   const amsIdentifier = `${videoFile.originalname}_${currentDate}`
+  const inputAssetName = `${ENV}_input_${amsIdentifier}`
+  const outputAssetName = `${ENV}_${amsIdentifier}`
+  const encodingJobName = `${ENV}_job_${amsIdentifier}`
 
-  const inputAssetName = `input_${amsIdentifier}`
   const jobInputAsset = await getOrCreateJobInputAsset(videoFile, inputAssetName)
-
-  const outputAssetName = `output_${amsIdentifier}`
   const jobOutputAsset = await createOutputAsset(outputAssetName)
-
-  const encodingJobName = `job_${amsIdentifier}`
 
   let encodingError, encodingJob
 
   [encodingError, encodingJob] = await to(submitEncodingJob(jobInputAsset, jobOutputAsset.name, encodingJobName))
 
-  const job = await jobs.add(
+  await jobs.add(
     {
       amsIdentifier: amsIdentifier,
       mediaBlockId: mediaBlockId
@@ -87,7 +86,7 @@ const logInToAzure = async () => {
   return authResponse
 }
 
-const getOrCreateTransform = async () => {
+const createTransform = async () => {
   let error, transform
 
   [error, transform] = await to (
@@ -198,9 +197,9 @@ exports.deleteAssets = async (amsIdentifier) => {
 
   azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
 
-  const jobName = `job_${amsIdentifier}`
-  const inputAssetName = `input_${amsIdentifier}`
-  const outputAssetName = `output_${amsIdentifier}`
+  const jobName = `${ENV}_job_${amsIdentifier}`
+  const inputAssetName = `${ENV}_input_${amsIdentifier}`
+  const outputAssetName = `${ENV}_${amsIdentifier}`
 
   await azureMediaServicesClient.jobs.deleteMethod(
     RESOURCE_GROUP,
@@ -231,9 +230,9 @@ const getEncodingJobResult = async (amsIdentifier) => {
 
   azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
 
-  const jobName = `job_${amsIdentifier}`
-  const outputAssetName = `output_${amsIdentifier}`
-  const inputAssetName = `input_${amsIdentifier}`
+  const jobName = `${ENV}_job_${amsIdentifier}`
+  const inputAssetName = `${ENV}_input_${amsIdentifier}`
+  const outputAssetName = `${ENV}_${amsIdentifier}`
   const locatorName = `locator_${amsIdentifier}`
 
   const encodingJob = await azureMediaServicesClient.jobs.get(
