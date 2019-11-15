@@ -1,8 +1,12 @@
+const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
+const { Video } = require('~models/video')
+const AzureService = require('~services/azure.service')
 
-exports.findById = async (mediaBlockId) => {
+const findById = async (mediaBlockId) => {
   return MediaBlock.findById(mediaBlockId)
 }
+exports.findById = findById
 
 exports.findByNormalizedText = async (normalizedText) => {
   return MediaBlock.findOne({ normalizedText: normalizedText })
@@ -14,7 +18,10 @@ exports.findOrCreate = async (newMediaBlock) => {
   if (!mediaBlock) {
     mediaBlock = new MediaBlock({
       normalizedText: newMediaBlock.rawText.toLowerCase(),
-      rawText: newMediaBlock.rawText
+      rawText: newMediaBlock.rawText,
+      bslScript: newMediaBlock.bslScript || '',
+      status: newMediaBlock.status || 'untranslated',
+      video: newMediaBlock.video || null
     })
     mediaBlock = await mediaBlock.save()
   }
@@ -42,15 +49,89 @@ exports.findOrCreateMediaBlocks = async (newPage, page) => {
   return mediaBlocks
 }
 
-exports.update = async (mediaBlock, newMediaBlock) => {
-  mediaBlock.bslScript = newMediaBlock.bslScript
-  mediaBlock.videoUri = newMediaBlock.videoUri
+exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
+  if (videoFile) {
+    const result = await AzureService.storeVideoFile(mediaBlock._id, videoFile)
 
-  if (mediaBlock.videoUri) {
+    if (mediaBlock.video) {
+      mediaBlock.video.videoFile = videoFile
+      mediaBlock.video.uri = null
+      mediaBlock.video.encodingState = result.encodingState
+      mediaBlock.video.amsIdentifier = result.amsIdentifier
+      mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
+      mediaBlock.status = 'untranslated'
+
+      mediaBlock.markModified('video')
+    } else {
+      mediaBlock.video = new Video({
+        videoFile: videoFile,
+        encodingState: result.encodingState,
+        amsIdentifier: result.amsIdentifier,
+        amsIdentifiers: [result.amsIdentifier]
+      })
+    }
+  } else if (newMediaBlock.video) {
+    if (mediaBlock.video) {
+      mediaBlock.video.videoFile = newMediaBlock.videoFile || mediaBlock.video.videoFile
+      mediaBlock.video.uri = newMediaBlock.video.uri || mediaBlock.video.uri
+      mediaBlock.video.encodingState = newMediaBlock.video.encodingState || mediaBlock.video.encodingState
+      mediaBlock.video.amsIdentifier = mediaBlock.video.amsIdentifier || ''
+      mediaBlock.video.amsIdentifiers = mediaBlock.video.amsIdentifiers || []
+      mediaBlock.status = newMediaBlock.status || mediaBlock.status
+
+      mediaBlock.markModified('video')
+    } else {
+      mediaBlock.video = new Video({
+        uri: newMediaBlock.video.uri || '',
+        encodingState: newMediaBlock.video.uri ? 'Ready' : 'None'
+      })
+    }
+  }
+
+  mediaBlock.bslScript = newMediaBlock.bslScript || mediaBlock.bslScript
+
+  return await mediaBlock.save()
+}
+
+exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
+  let mediaBlock = await findById(mediaBlockId)
+
+  if (mediaBlock.video) {
+    if (encodingState === 'Ready') {
+      mediaBlock.video.videoFile = null
+    }
+
+    mediaBlock.video.encodingState = encodingState
+    mediaBlock.video.uri = videoUri
+    mediaBlock.markModified('video')
+  } else {
+    mediaBlock.video = new Video({
+      encodingState: encodingState,
+      uri: videoUri
+    })
+  }
+
+  if (videoUri) {
     mediaBlock.status = 'translated'
   } else {
-    mediaBlock.status = newMediaBlock.status || 'untranslated'
+    mediaBlock.status = mediaBlock.status || 'untranslated'
   }
+
+  return await mediaBlock.save()
+}
+
+exports.deleteVideo = async (mediaBlock) => {
+  if (mediaBlock.video) {
+    mediaBlock.video.videoFile = null
+    mediaBlock.video.encodingState = 'None'
+    mediaBlock.video.amsIdentifier = null
+    mediaBlock.video.uri = null
+    mediaBlock.markModified('video')
+  }
+
+  mediaBlock.status = 'untranslated'
+
+  await deleteFile(`video_${mediaBlock._id}.mp4`)
 
   return await mediaBlock.save()
 }

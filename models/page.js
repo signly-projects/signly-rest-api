@@ -35,7 +35,9 @@ const Page = mongoose.model('Page', PageSchema)
 function validatePage (page, type = 'create') {
   const mediaBlockSchema = {
     rawText: Joi.string().required(),
-    videoUri: Joi.string().allow(null, '').uri()
+    bslScript: Joi.string().allow(''),
+    status: Joi.string(),
+    video: Joi.object().allow(null).allow('')
   }
 
   const schema = {

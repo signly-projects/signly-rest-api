@@ -8,7 +8,22 @@ exports.findAll = async (query) => {
   }
 
   if (query.withMediaBlocks) {
-    return await Page.find().populate('mediaBlocks')
+    let pages = await Page.find().sort(options.sort).populate({
+      path: 'mediaBlocks',
+      options: {
+        sort: { updatedAt: 'asc' }
+      }
+    })
+
+    if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
+      pages.forEach(page => {
+        page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.status === 'untranslated')
+      })
+
+      pages = pages.filter(page => page.mediaBlocks.length > 0)
+    }
+
+    return pages
   }
 
   return await Page.find().sort(options.sort)
@@ -32,6 +47,9 @@ exports.findById = async (pageId, withMediaBlocks = false) => {
 
 exports.create = async (newPage, mediaBlocks) => {
   let page = new Page({
+    requested: newPage.requested,
+    enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
+    title: newPage.title,
     uri: newPage.uri,
     mediaBlocks: mediaBlocks
   })
@@ -40,6 +58,7 @@ exports.create = async (newPage, mediaBlocks) => {
 }
 
 exports.update = async (page, newPage, mediaBlocks) => {
+  page.title = newPage.title || page.title
   page.uri = newPage.uri || page.uri
   page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
   page.mediaBlocks.push(...mediaBlocks)
