@@ -1,5 +1,34 @@
 const { Page } = require('~models/page')
 
+const getPagesWithMediaBlocks = async (query, options) => {
+  let pages = await Page.find().sort(options.sort).populate({
+    path: 'mediaBlocks',
+    options: {
+      sort: { updatedAt: 'asc' }
+    }
+  })
+
+  if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
+    pages.forEach(page => {
+      page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.status === 'untranslated')
+    })
+
+    pages = pages.filter(page => page.mediaBlocks.length > 0)
+  }
+
+  if (query.search) {
+    const search = encodeURIComponent(query.search)
+
+    pages.forEach(page => {
+      page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.normalizedText.includes(search.toLowerCase()))
+    })
+
+    pages = pages.filter(page => page.mediaBlocks.length > 0)
+  }
+
+  return pages
+}
+
 exports.findAll = async (query) => {
   let options = {
     sort: {
@@ -8,22 +37,7 @@ exports.findAll = async (query) => {
   }
 
   if (query.withMediaBlocks) {
-    let pages = await Page.find().sort(options.sort).populate({
-      path: 'mediaBlocks',
-      options: {
-        sort: { updatedAt: 'asc' }
-      }
-    })
-
-    if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
-      pages.forEach(page => {
-        page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.status === 'untranslated')
-      })
-
-      pages = pages.filter(page => page.mediaBlocks.length > 0)
-    }
-
-    return pages
+    return await getPagesWithMediaBlocks(query, options)
   }
 
   return await Page.find().sort(options.sort)
@@ -32,17 +46,17 @@ exports.findAll = async (query) => {
 exports.findByUri = async (uri, withMediaBlocks = false) => {
   if (withMediaBlocks) {
     return Page.findOne({ uri: uri }).populate('mediaBlocks')
-  } else {
-    return Page.findOne({ uri: uri })
   }
+
+  return Page.findOne({ uri: uri })
 }
 
 exports.findById = async (pageId, withMediaBlocks = false) => {
   if (withMediaBlocks) {
     return Page.findById(pageId).populate('mediaBlocks')
-  } else {
-    return Page.findById(pageId)
   }
+
+  return Page.findById(pageId)
 }
 
 exports.create = async (newPage, mediaBlocks) => {
