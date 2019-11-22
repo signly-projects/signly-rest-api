@@ -98,6 +98,14 @@
 
 ---
 
+## Backup & Restore CosmosDB with MongoDB database
+### Backup
+`mongodump --uri="<connection_string>"`
+
+### Restore
+`sudo mongorestore --db <database_name> --drop <dump_folder>`
+---
+
 ## Testing with Jest
 
 ### Running tests

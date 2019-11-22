@@ -2,14 +2,15 @@
   const axios = require('axios')
   const fs = require('fs')
 
+
   const ORIGIN_SIGNLY_API_URL = 'https://signly.azurewebsites.net/api'
-  const TARGET_SIGNLY_API_URL = 'http://localhost:3030/api'
+  const TARGET_SIGNLY_API_URL = 'http://localhost:3030'
 
   const uploadPage = async (webPage) => {
     const { requested, enabled, uri, title, mediaBlocks } = webPage
 
     const newMediaBlocks = mediaBlocks.map(mediaBlock => {
-      const { rawText, bslScript, status } = mediaBlock
+      const { rawText, bslScript, status, createdAt, updatedAt } = mediaBlock
       let video = {}
 
       if (mediaBlock.videoUri) {
@@ -21,13 +22,13 @@
         video = null
       }
 
-      return { rawText, bslScript, status, video }
+      return { rawText, bslScript, status, video, createdAt: {$date: createdAt}, updatedAt: {$date: updatedAt} }
     })
 
     const newWebPage = { requested, enabled, uri, title, mediaBlocks: newMediaBlocks }
 
     return axios({
-      url: `${TARGET_SIGNLY_API_URL}/pages`,
+      url: `${TARGET_SIGNLY_API_URL}/api/pages`,
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       data: {
@@ -41,11 +42,16 @@
     for (const page of pages) {
       try {
         const result = await uploadHandler(page)
+        // eslint-disable-next-line no-console
+        console.log(` \u2713 ${result.data.page.uri} (STATUS: ${result.status})`)
         results.push({
-          uri: page.uri,
+          uri: result.data.page.uri,
           status: result.status
         })
       } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(` \u274C ${page.uri} (STATUS: ${error.status})\n\t${error.message}`)
+
         results.push({
           uri: page.uri,
           status: error.status,
@@ -79,13 +85,7 @@
   console.log(`Uploading data to '${TARGET_SIGNLY_API_URL}' ...`)
 
   uploadAllPages(pages, uploadPage)
-    .then((result) => {
-      result.forEach(res => {
-        if (!res.error) {
-          console.log(` \u2713 ${res.uri} (STATUS: ${res.status})`)
-        } else {
-          console.log(` \u274C ${res.uri} (STATUS: ${res.status}\n\t${res.error}`)
-        }
-      })
+    .then(() => {
+      console.log('Migration finished.')
     })
 })()
