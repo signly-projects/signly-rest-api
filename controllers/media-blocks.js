@@ -2,6 +2,13 @@ const { validateMediaBlock } = require('~models/media-block')
 
 const MediaBlocksService = require('~services/media-blocks.service')
 
+exports.getMediaBlocks = async (req, res, next) => {
+  const mediaBlocks = await MediaBlocksService.findAll(req.query)
+  const totalMediaBlocksCount = await MediaBlocksService.countAll()
+
+  res.status(200).send({ mediaBlocks: mediaBlocks, count: totalMediaBlocksCount })
+}
+
 exports.getMediaBlock = async (req, res, next) => {
   const mediaBlock = await MediaBlocksService.findById(req.params.id)
 

@@ -4,7 +4,7 @@ const multer = require('multer')
 const { storage, fileFilter } = require('~utils/storage')
 const validateObjectId = require('~middleware/validateObjectId')
 
-const { getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
+const { getMediaBlocks, getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
 
 const router = express.Router()
 
@@ -14,6 +14,9 @@ const upload = multer({
 })
 
 // GET /api/media-blocks
+router.get('/', getMediaBlocks)
+
+// GET /api/media-blocks/search
 router.get('/search', getMediaBlockByNormalizedText)
 
 // GET /api/media-blocks/:id

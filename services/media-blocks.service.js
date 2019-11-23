@@ -3,6 +3,27 @@ const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
 const AzureService = require('~services/azure.service')
 
+const MAX_ITEMS = 100
+
+exports.countAll = async () => {
+  return await MediaBlock.count({})
+}
+
+exports.findAll = async (query) => {
+  const { limit, search } = query
+
+  let searchQuery = {
+    rawText: {
+      $regex: search || '',
+      $options: 'i'
+    }
+  }
+
+  const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS
+
+  return await MediaBlock.find(searchQuery).sort({ updatedAt: 'desc' }).limit(itemLimit)
+}
+
 const findById = async (mediaBlockId) => {
   return MediaBlock.findById(mediaBlockId)
 }
@@ -11,6 +32,7 @@ exports.findById = findById
 exports.findByNormalizedText = async (normalizedText) => {
   return MediaBlock.findOne({ normalizedText: normalizedText })
 }
+
 exports.findOrCreate = async (newMediaBlock) => {
   const normalizedText = newMediaBlock.rawText.toLowerCase()
   let mediaBlock = await MediaBlock.findOne({ normalizedText: normalizedText })
