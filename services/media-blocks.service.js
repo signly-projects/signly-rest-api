@@ -105,9 +105,12 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
     } else {
       mediaBlock.video = new Video({
         uri: newMediaBlock.video.uri || '',
-        encodingState: newMediaBlock.video.uri ? 'Ready' : 'None'
+        encodingState: newMediaBlock.video.uri ? 'Ready' : 'None',
+        status: newMediaBlock.status || mediaBlock.status
       })
     }
+  } else {
+    mediaBlock.status = newMediaBlock.status || mediaBlock.status
   }
 
   mediaBlock.bslScript = newMediaBlock.bslScript || mediaBlock.bslScript
