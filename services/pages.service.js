@@ -26,7 +26,7 @@ const getPagesWithMediaBlocks = async (query, options) => {
 }
 
 exports.countAll = async () => {
-  return await Page.count({})
+  return Page.countDocuments()
 }
 
 exports.findAll = async (query) => {
