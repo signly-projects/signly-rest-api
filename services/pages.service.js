@@ -90,3 +90,15 @@ exports.updateRequest = async (page, mediaBlocks) => {
 exports.delete = async (pageId) => {
   return Page.findByIdAndDelete(pageId)
 }
+
+exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
+  const page = await Page.findById(pageId)
+
+  const mediaBlockIdIndex = page.mediaBlocks.indexOf(mediaBlockId)
+
+  if (mediaBlockIdIndex >= 0) {
+    page.mediaBlocks.splice(mediaBlockIdIndex, 1)
+  }
+
+  return await page.save()
+}

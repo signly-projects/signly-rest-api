@@ -27,6 +27,6 @@ router.delete('/:id', validateObjectId, deletePage)
 //NESTED ROUTES
 
 // GET /api/pages/:pageId/media-blocks
-router.use('/:id/media-blocks', mediaBlocks)
+router.use('/:pageId/media-blocks', mediaBlocks)
 
 module.exports = router
