@@ -5,6 +5,12 @@ const getPagesWithMediaBlocks = async (query, options) => {
     path: 'mediaBlocks',
     options: {
       sort: { updatedAt: 'asc' }
+    },
+    match: {
+      rawText: {
+        $regex: query.search || '',
+        $options: 'i'
+      }
     }
   })
 
@@ -16,17 +22,11 @@ const getPagesWithMediaBlocks = async (query, options) => {
     pages = pages.filter(page => page.mediaBlocks.length > 0)
   }
 
-  if (query.search) {
-    const search = encodeURIComponent(query.search)
-
-    pages.forEach(page => {
-      page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.normalizedText.includes(search.toLowerCase()))
-    })
-
-    pages = pages.filter(page => page.mediaBlocks.length > 0)
-  }
-
   return pages
+}
+
+exports.countAll = async () => {
+  return Page.countDocuments()
 }
 
 exports.findAll = async (query) => {
@@ -89,4 +89,16 @@ exports.updateRequest = async (page, mediaBlocks) => {
 
 exports.delete = async (pageId) => {
   return Page.findByIdAndDelete(pageId)
+}
+
+exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
+  const page = await Page.findById(pageId)
+
+  const mediaBlockIdIndex = page.mediaBlocks.indexOf(mediaBlockId)
+
+  if (mediaBlockIdIndex >= 0) {
+    page.mediaBlocks.splice(mediaBlockIdIndex, 1)
+  }
+
+  return await page.save()
 }
