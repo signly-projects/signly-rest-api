@@ -1,7 +1,8 @@
 const bodyParser = require('body-parser')
-const pages = require('~routes/pages')
-const mediaBlocks = require('~routes/media-blocks')
-const status = require('~routes/status')
+const pagesPrivate = require('~routes/private/pages')
+const mediaBlocksPrivate = require('~routes/private/media-blocks')
+const pagesPublic = require('~routes/public/pages')
+const statusPublic = require('~routes/public/status')
 const header = require('~middleware/header')
 const error = require('~middleware/error')
 
@@ -10,10 +11,13 @@ module.exports = function (app) {
   app.use(bodyParser.json({ limit: '10mb', extended: true }))
   app.use(header)
 
-  app.use('/api/pages', pages)
-  app.use('/api/media-blocks', mediaBlocks)
+  /* PRIVATE ROUTES */
+  app.use('/api/private/pages', pagesPrivate)
+  app.use('/api/private/media-blocks', mediaBlocksPrivate)
 
-  app.use('/api/status', status)
+  /* PUBLIC ROUTES */
+  app.use('/api/public/pages', pagesPublic)
+  app.use('/api/public/status', statusPublic)
 
   app.use(error)
 }

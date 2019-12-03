@@ -1,18 +1,23 @@
 const { Page } = require('~models/page')
 
+const MAX_ITEMS = 100
+
 const getPagesWithMediaBlocks = async (query, options) => {
-  let pages = await Page.find().sort(options.sort).populate({
-    path: 'mediaBlocks',
-    options: {
-      sort: { updatedAt: 'asc' }
-    },
-    match: {
-      rawText: {
-        $regex: query.search || '',
-        $options: 'i'
+  let pages = await Page
+    .find()
+    .limit(options.limit)
+    .sort(options.sort).populate({
+      path: 'mediaBlocks',
+      options: {
+        sort: { updatedAt: 'asc' }
+      },
+      match: {
+        rawText: {
+          $regex: query.search || '',
+          $options: 'i'
+        }
       }
-    }
-  })
+    })
 
   if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
     pages.forEach(page => {
@@ -33,14 +38,15 @@ exports.findAll = async (query) => {
   let options = {
     sort: {
       requested: 'desc'
-    }
+    },
+    limit: query.limit ? parseInt(query.limit, 10) : MAX_ITEMS
   }
 
   if (query.withMediaBlocks) {
     return await getPagesWithMediaBlocks(query, options)
   }
 
-  return await Page.find().sort(options.sort)
+  return await Page.find().limit(options.limit).sort(options.sort)
 }
 
 exports.findByUri = async (uri, withMediaBlocks = false) => {
