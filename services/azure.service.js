@@ -2,7 +2,7 @@ require('dotenv').config()
 const url = require('url')
 const to = require('await-to-js').default
 const msRestNodeAuth = require('@azure/ms-rest-nodeauth')
-const { BlobServiceClient, SharedKeyCredential } = require('@azure/storage-blob')
+const { BlobServiceClient, StorageSharedKeyCredential } = require('@azure/storage-blob')
 const { AzureMediaServices } = require('@azure/arm-mediaservices')
 
 let { jobs, MAX_ATTEMPTS, BACKOFF_TIME } = require('~utils/jobs')
@@ -32,7 +32,7 @@ const storeVideoFile = async (mediaBlockId, videoFile) => {
     authResponse = await logInToAzure()
   }
 
-  const sharedKeyCredential = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
+  const sharedKeyCredential = new StorageSharedKeyCredential(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
   azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
 
   blobServiceClient = new BlobServiceClient(
