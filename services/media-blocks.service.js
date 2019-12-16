@@ -7,7 +7,7 @@ const AzureService = require('~services/azure.service')
 const MAX_ITEMS = 100
 
 exports.countAll = async () => {
-  return await MediaBlock.count({})
+  return MediaBlock.countDocuments()
 }
 
 exports.findAll = async (query) => {
