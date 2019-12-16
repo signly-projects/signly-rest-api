@@ -1,7 +1,6 @@
 const express = require('express')
 const validateObjectId = require('~middleware/validateObjectId')
 const validateUri = require('~middleware/validateUri')
-const mediaBlocks = require('~routes/pages/media-blocks')
 const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage } = require('~controllers/pages')
 
 const router = express.Router()
@@ -23,10 +22,5 @@ router.patch('/:id', validateObjectId, patchPage)
 
 // DELETE /api/pages/:id
 router.delete('/:id', validateObjectId, deletePage)
-
-//NESTED ROUTES
-
-// GET /api/pages/:pageId/media-blocks
-router.use('/:id/media-blocks', mediaBlocks)
 
 module.exports = router

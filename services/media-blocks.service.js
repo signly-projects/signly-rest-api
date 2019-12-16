@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
@@ -13,10 +14,20 @@ exports.findAll = async (query) => {
   const { limit, search } = query
 
   let searchQuery = {
-    rawText: {
-      $regex: search || '',
-      $options: 'i'
-    }
+    $or: [
+      {
+        rawText: {
+          $regex: search || '',
+          $options: 'i'
+        }
+      }
+    ]
+  }
+
+  const validId = mongoose.Types.ObjectId.isValid(search)
+
+  if (validId) {
+    searchQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
   }
 
   const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS

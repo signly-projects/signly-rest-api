@@ -8,7 +8,7 @@ const MediaBlocksService = require('~services/media-blocks.service')
 const AzureService = require('~services/azure.service')
 
 let jobs = new Jobs('jobs', process.env.REDIS_URI)
-const MAX_ATTEMPTS = 10
+const MAX_ATTEMPTS = 30
 const BACKOFF_TIME = 15000
 
 jobs.process(async (job) => {
