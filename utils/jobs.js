@@ -1,5 +1,5 @@
 require('dotenv').config()
-const winston = require('winston')
+// const winston = require('winston')
 const to = require('await-to-js').default
 const Jobs = require('bull')
 
@@ -7,9 +7,30 @@ const { deleteFile } = require('~utils/storage')
 const MediaBlocksService = require('~services/media-blocks.service')
 const AzureService = require('~services/azure.service')
 
-let jobs = new Jobs('jobs', process.env.REDIS_URI)
-const MAX_ATTEMPTS = 30
-const BACKOFF_TIME = 15000
+const ENV = process.env.NODE_ENV
+const REDIS_PORT = process.env.REDIS_PORT
+const REDIS_HOST = process.env.REDIS_HOST
+const REDIS_PASS = process.env.REDIS_PASS
+
+let jobs
+
+if (ENV === 'prod' || ENV === 'stag' || ENV === 'dev') {
+  jobs = new Jobs('jobs', {
+    redis: {
+      port: Number(REDIS_PORT),
+      host: REDIS_HOST,
+      password: REDIS_PASS,
+      tls: {
+        servername: REDIS_HOST
+      }
+    }
+  })
+} else {
+  jobs = new Jobs('jobs', process.env.REDIS_URI)
+}
+
+const MAX_ATTEMPTS = 10
+const BACKOFF_TIME = 30000
 
 jobs.process(async (job) => {
   console.log('Job started', job.data.mediaBlockId, job.data.amsIdentifier)
