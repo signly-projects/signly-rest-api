@@ -1,7 +1,7 @@
 const express = require('express')
 const validateObjectId = require('~middleware/validateObjectId')
 const validateUri = require('~middleware/validateUri')
-const mediaBlocks = require('~routes/pages/media-blocks')
+const mediaBlocks = require('~routes/v1/private/pages/media-blocks')
 const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage } = require('~controllers/pages')
 
 const router = express.Router()
