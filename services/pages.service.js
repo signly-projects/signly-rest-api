@@ -1,31 +1,41 @@
 const { Page } = require('~models/page')
+const { MediaBlock } = require('~models/media-block')
 
 const MAX_ITEMS = 100
 
-const getPagesWithMediaBlocks = async (query, options) => {
-  let pages = await Page
-    .find()
-    .limit(options.limit)
-    .sort(options.sort).populate({
-      path: 'mediaBlocks',
-      options: {
-        sort: { updatedAt: 'asc' }
-      },
-      match: {
+const getPagesWithMediaBlocks = async (queryParams, options) => {
+  const query = {
+    $and: [
+      {
         rawText: {
-          $regex: query.search || '',
+          $regex: queryParams.search || '',
           $options: 'i'
         }
       }
-    })
-
-  if (query.mediaBlocksStatus && query.mediaBlocksStatus === 'untranslated') {
-    pages.forEach(page => {
-      page.mediaBlocks = page.mediaBlocks.filter(mediaBlock => mediaBlock.status === 'untranslated')
-    })
-
-    pages = pages.filter(page => page.mediaBlocks.length > 0)
+    ]
   }
+
+  if (queryParams.mediaBlocksStatus) {
+    query.$and.push({ status: queryParams.mediaBlocksStatus })
+  }
+
+  let pages = await Page
+    .find({
+      mediaBlocks: { $exists: true },
+      $where: 'this.mediaBlocks.length>0'
+    })
+    .sort(options.sort)
+    .populate({
+      path: 'mediaBlocks',
+      model: MediaBlock,
+      options: {
+        sort: { updatedAt: 'asc' }
+      },
+      match: query
+    })
+
+  pages = pages.filter(page => page.mediaBlocks.length > 0)
+  pages = pages.slice(0, queryParams.limit)
 
   return pages
 }
