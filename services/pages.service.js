@@ -20,10 +20,7 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
   }
 
   let pages = await Page
-    .find({
-      mediaBlocks: { $exists: true },
-      $where: 'this.mediaBlocks.length>0'
-    })
+    .find()
     .sort(options.sort)
     .populate({
       path: 'mediaBlocks',
