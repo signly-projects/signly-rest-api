@@ -25,7 +25,7 @@ const MediaBlockSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['untranslated', 'translating', 'translated', 'irrelevant'],
+      enum: ['untranslated', 'translating', 'translated', 'irrelevant', 'review'],
       default: 'untranslated'
     }
   },

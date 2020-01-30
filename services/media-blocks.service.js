@@ -148,7 +148,9 @@ exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
   }
 
   if (videoUri) {
-    mediaBlock.status = 'translated'
+    if (mediaBlock.status !== 'review') {
+      mediaBlock.status = 'translated'
+    }
   } else {
     mediaBlock.status = mediaBlock.status || 'untranslated'
   }

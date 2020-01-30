@@ -16,7 +16,12 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
   }
 
   if (queryParams.mediaBlocksStatus) {
-    query.$and.push({ status: queryParams.mediaBlocksStatus })
+    if (typeof queryParams.mediaBlocksStatus === 'string' || queryParams.mediaBlocksStatus instanceof String) {
+      query.$and.push({ status: queryParams.mediaBlocksStatus })
+    } else if (Array.isArray(queryParams.mediaBlocksStatus)) {
+      const statuses = queryParams.mediaBlocksStatus.map(status => { return { status: status } })
+      query.$and.push({ $or: statuses })
+    }
   }
 
   let pages = await Page
