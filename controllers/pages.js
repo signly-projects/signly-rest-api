@@ -1,5 +1,6 @@
 const { validatePage } = require('~models/page')
 
+const SiteService = require('~services/sites.service')
 const PageService = require('~services/pages.service')
 const MediaBlockService = require('~services/media-blocks.service')
 
@@ -43,8 +44,11 @@ exports.createPage = async (req, res, next) => {
 
   if (!page) {
     let page = await PageService.create(newPage, mediaBlocks)
+    await SiteService.findOrCreate(page.uri, page._id)
     return res.status(201).send({ page: page })
   }
+
+  await SiteService.findOrCreate(page.uri, page._id)
 
   page = await PageService.updateRequest(page, mediaBlocks)
 

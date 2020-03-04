@@ -1,4 +1,5 @@
 const bodyParser = require('body-parser')
+const sitesPrivate = require('~routes/v1/private/sites')
 const pagesPrivate = require('~routes/v1/private/pages')
 const mediaBlocksPrivate = require('~routes/v1/private/media-blocks')
 const pagesPublic = require('~routes/v1/public/pages')
@@ -11,12 +12,8 @@ module.exports = function (app) {
   app.use(bodyParser.json({ limit: '10mb', extended: true }))
   app.use(header)
 
-  /* TO DELETE AFTER EXTENSION UPDATE TO USE PUBLIC ONLY */
-  app.use('/api/pages', pagesPrivate)
-  app.use('/api/media-blocks', mediaBlocksPrivate)
-  app.use('/api/status', statusPublic)
-
   /* PRIVATE ROUTES */
+  app.use('/api/v1/private/sites', sitesPrivate)
   app.use('/api/v1/private/pages', pagesPrivate)
   app.use('/api/v1/private/media-blocks', mediaBlocksPrivate)
 
