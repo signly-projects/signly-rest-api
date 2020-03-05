@@ -9,7 +9,7 @@ exports.countAll = async () => {
 exports.findAll = async (query) => {
   let options = {
     sort: {
-      requested: 'desc'
+      title: 'asc'
     },
     limit: query.limit ? parseInt(query.limit, 10) : MAX_ITEMS
   }
