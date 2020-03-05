@@ -11,13 +11,23 @@ exports.countAll = async () => {
 }
 
 exports.findAll = async (query) => {
-  const { limit, search } = query
+  const { limit, search, filter } = query
 
   let searchQuery = {
-    $or: [
+    $and: [
       {
-        rawText: {
-          $regex: search || '',
+        $or: [
+          {
+            rawText: {
+              $regex: search || '',
+              $options: 'i'
+            }
+          }
+        ]
+      },
+      {
+        status: {
+          $regex: `^${filter}` || '',
           $options: 'i'
         }
       }
