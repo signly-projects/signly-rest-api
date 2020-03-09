@@ -1,9 +1,14 @@
+const safe = require('safe-regex')
 const { Page } = require('~models/page')
 const { MediaBlock } = require('~models/media-block')
 
 const MAX_ITEMS = 100
 
 const getPagesWithMediaBlocks = async (queryParams, options) => {
+  if (!safe) {
+    return []
+  }
+
   const query = {
     $and: [
       {
@@ -110,13 +115,9 @@ exports.delete = async (pageId) => {
 }
 
 exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
-  const page = await Page.findById(pageId)
-
-  const mediaBlockIdIndex = page.mediaBlocks.indexOf(mediaBlockId)
-
-  if (mediaBlockIdIndex >= 0) {
-    page.mediaBlocks.splice(mediaBlockIdIndex, 1)
-  }
-
-  return await page.save()
+  return await Page.update(
+    { _id: pageId },
+    { $pull: { mediaBlocks: mediaBlockId } },
+    { multi: true }
+  )
 }

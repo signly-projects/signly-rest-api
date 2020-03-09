@@ -1,3 +1,4 @@
+const safe = require('safe-regex')
 const mongoose = require('mongoose')
 const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
@@ -13,21 +14,15 @@ exports.countAll = async () => {
 exports.findAll = async (query) => {
   const { limit, search, filter } = query
 
-  let searchQuery = {
-    $and: [
+  if (!safe(search)) {
+    return []
+  }
+
+  const orQuery = {
+    $or: [
       {
-        $or: [
-          {
-            rawText: {
-              $regex: search || '',
-              $options: 'i'
-            }
-          }
-        ]
-      },
-      {
-        status: {
-          $regex: `^${filter}` || '',
+        rawText: {
+          $regex: search || '',
           $options: 'i'
         }
       }
@@ -37,7 +32,19 @@ exports.findAll = async (query) => {
   const validId = mongoose.Types.ObjectId.isValid(search)
 
   if (validId) {
-    searchQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
+    orQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
+  }
+
+  let searchQuery = {
+    $and: [
+      orQuery,
+      {
+        status: {
+          $regex: `^${filter}` || '',
+          $options: 'i'
+        }
+      }
+    ]
   }
 
   const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS

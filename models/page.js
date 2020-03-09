@@ -16,7 +16,7 @@ const PageSchema = new Schema(
     },
     enabled: {
       type: Boolean,
-      default: false
+      default: true
     },
     requested: {
       type: Number,
