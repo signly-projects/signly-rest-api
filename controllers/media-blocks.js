@@ -9,6 +9,23 @@ exports.getMediaBlocks = async (req, res, next) => {
   res.status(200).send({ mediaBlocks: mediaBlocks, count: totalMediaBlocksCount })
 }
 
+exports.getMediaBlocksExport = async (req, res, next) => {
+  const mediaBlocks = await MediaBlocksService.findAll(req.query)
+
+  const fileName = `lexicon-${new Date().toISOString()}.xls`
+
+  const mediaBlocksData = mediaBlocks.map(mb => {
+    return Object.assign({}, {
+      status: mb.status,
+      id: mb.id,
+      text: mb.rawText,
+      updatedAt: mb.updatedAt.toISOString()
+    })
+  })
+
+  res.xls(fileName, mediaBlocksData)
+}
+
 exports.getMediaBlock = async (req, res, next) => {
   const mediaBlock = await MediaBlocksService.findById(req.params.id)
 
@@ -56,3 +73,4 @@ exports.patchMediaBlock = async (req, res, next) => {
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }
+

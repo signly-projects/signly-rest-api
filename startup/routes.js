@@ -6,11 +6,13 @@ const pagesPublic = require('~routes/v1/public/pages')
 const statusPublic = require('~routes/v1/public/status')
 const header = require('~middleware/header')
 const error = require('~middleware/error')
+const json2xls = require('json2xls')
 
 module.exports = function (app) {
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }))
   app.use(bodyParser.json({ limit: '10mb', extended: true }))
   app.use(header)
+  app.use(json2xls.middleware)
 
   /* PRIVATE ROUTES */
   app.use('/api/v1/private/sites', sitesPrivate)

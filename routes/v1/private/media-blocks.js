@@ -4,7 +4,13 @@ const multer = require('multer')
 const { storage, fileFilter } = require('~utils/storage')
 const validateObjectId = require('~middleware/validateObjectId')
 
-const { getMediaBlocks, getMediaBlock, getMediaBlockByNormalizedText, patchMediaBlock } = require('~controllers/media-blocks')
+const {
+  getMediaBlocks,
+  getMediaBlocksExport,
+  getMediaBlock,
+  getMediaBlockByNormalizedText,
+  patchMediaBlock
+} = require('~controllers/media-blocks')
 
 const router = express.Router()
 
@@ -19,10 +25,14 @@ router.get('/', getMediaBlocks)
 // GET /api/media-blocks/search
 router.get('/search', getMediaBlockByNormalizedText)
 
+// GET /api/media-blocks/export
+router.get('/export', getMediaBlocksExport)
+
 // GET /api/media-blocks/:id
 router.get('/:id', validateObjectId, getMediaBlock)
 
 // PATCH /api/media-blocks/:id
 router.patch('/:id', validateObjectId, upload.single('file'), patchMediaBlock)
+
 
 module.exports = router
