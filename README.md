@@ -104,6 +104,7 @@
 
 ### Restore
 `sudo mongorestore --db <database_name> --drop <dump_folder>`
+
 ---
 
 ## Testing with Jest

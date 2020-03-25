@@ -37,7 +37,7 @@ exports.findOrCreate = async (pageUrl, pageId) => {
 }
 
 exports.findById = async (siteId, query) => {
-  if (query.withStats) {
+  if (query && query.withStats) {
     return Site
       .findById(siteId)
       .populate({

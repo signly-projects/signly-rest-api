@@ -11,68 +11,111 @@ exports.getSites = async (req, res, next) => {
 }
 
 exports.getSite = async (req, res, next) => {
-  const site = await SiteService.findById(req.params.id, req.query)
+  const site = await SiteService.findById(req.params.id)
 
   if (!site) {
     return res.status(404).send('Site with the given ID not found.')
   }
 
-  if (req.query.withStats) {
-    const mediaBlocks = {
-      all: [],
-      translated: [],
-      untranslated: [],
-      other: []
-    }
+  if (!req.query.withStats) {
+    return res.status(200).send({ site: site })
+  }
 
-    site.pages.forEach(page => {
-      mediaBlocks.all = [...mediaBlocks.all, ...page.mediaBlocks]
+  const siteWithStats = await SiteService.findById(req.params.id, req.query)
 
-      page.mediaBlocks.forEach(mb => {
-        if (mb.status === 'translated') {
-          mediaBlocks.translated.push(mb)
-        } else if (mb.status === 'untranslated') {
-          mediaBlocks.untranslated.push(mb)
-        } else {
-          mediaBlocks.other.push(mb)
-        }
-      })
-    })
+  const mediaBlocks = {
+    all: [],
+    translated: [],
+    untranslated: [],
+    other: []
+  }
 
-    const allWords = flatMap(mb => mb.rawText.split(' '), mediaBlocks.all)
-    const translatedWords = flatMap(mb => mb.rawText.split(' '), mediaBlocks.translated)
-    const untranslatedWords = flatMap(mb => mb.rawText.split(' '), mediaBlocks.untranslated)
-    const otherWords = flatMap(mb => mb.rawText.split(' '), mediaBlocks.other)
+  const words = {
+    all: [],
+    translated: [],
+    untranslated: [],
+    other: []
+  }
 
-    const stats = {
+  const sitePages = siteWithStats.pages.map(page => {
+    const pageStats = {
       textSegments: {
-        all: mediaBlocks.all.length,
-        translated: mediaBlocks.translated.length,
-        untranslated: mediaBlocks.untranslated.length,
-        other: mediaBlocks.other.length,
-      },
-      uniqueTextSegments: {
-        all: [...new Set(mediaBlocks.all)].length,
-        translated: [...new Set(mediaBlocks.translated)].length,
-        untranslated: [...new Set(mediaBlocks.untranslated)].length,
-        other: [...new Set(mediaBlocks.other)].length,
+        all: page.mediaBlocks.length,
+        translated: 0,
+        untranslated: 0,
+        other: 0
       },
       words: {
-        all: allWords.length,
-        translated: translatedWords.length,
-        untranslated: untranslatedWords.length,
-        other: otherWords.length,
-      },
-      uniqueWords: {
-        all: [...new Set(allWords)].length,
-        translated: [...new Set(translatedWords)].length,
-        untranslated: [...new Set(untranslatedWords)].length,
-        other: [...new Set(otherWords)].length
+        all: 0,
+        translated: 0,
+        untranslated: 0,
+        other: 0
       }
     }
 
-    return res.status(200).send({ site: site, stats: stats })
+    mediaBlocks.all = [...mediaBlocks.all, ...page.mediaBlocks]
+
+    page.mediaBlocks.forEach(mb => {
+      const currentWords = mb.rawText.split(' ')
+      words.all.push(...currentWords)
+
+      pageStats.words.all += currentWords.length
+      if (mb.status === 'translated') {
+        pageStats.words.translated += currentWords.length
+        pageStats.textSegments.translated += 1
+        mediaBlocks.translated.push(mb)
+        words.translated.push(...currentWords)
+      } else if (mb.status === 'untranslated') {
+        pageStats.words.untranslated += currentWords.length
+        pageStats.textSegments.untranslated += 1
+        mediaBlocks.untranslated.push(mb)
+        words.untranslated.push(...currentWords)
+      } else {
+        pageStats.words.other += currentWords.length
+        pageStats.textSegments.other += 1
+        mediaBlocks.other.push(mb)
+        words.other.push(...currentWords)
+      }
+    })
+
+    return Object.assign({}, {
+      uri: page.uri,
+      textSegments: pageStats.textSegments,
+      words: pageStats.words
+    })
+  })
+
+  const allUniqueMbs = [...new Set(mediaBlocks.all)]
+  const translatedUniqueMbs = [...new Set(mediaBlocks.translated)]
+  const untranslatedUniqueMbs = [...new Set(mediaBlocks.untranslated)]
+  const otherUniqueMbs = [...new Set(mediaBlocks.other)]
+
+  const stats = {
+    textSegments: {
+      all: mediaBlocks.all.length,
+      translated: mediaBlocks.translated.length,
+      untranslated: mediaBlocks.untranslated.length,
+      other: mediaBlocks.other.length,
+    },
+    uniqueTextSegments: {
+      all: allUniqueMbs.length,
+      translated: translatedUniqueMbs.length,
+      untranslated: untranslatedUniqueMbs.length,
+      other: otherUniqueMbs.length,
+    },
+    words: {
+      all: words.all.length,
+      translated: words.translated.length,
+      untranslated: words.untranslated.length,
+      other: words.other.length,
+    },
+    uniqueWords: {
+      all: flatMap(mb => mb.rawText.split(' '), allUniqueMbs).length,
+      translated: flatMap(mb => mb.rawText.split(' '), translatedUniqueMbs).length,
+      untranslated: flatMap(mb => mb.rawText.split(' '), untranslatedUniqueMbs).length,
+      other: flatMap(mb => mb.rawText.split(' '), otherUniqueMbs).length,
+    }
   }
 
-  res.status(200).send({ site: site })
+  return res.status(200).send({ site: site, pages: sitePages, stats: stats })
 }
