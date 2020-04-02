@@ -70,11 +70,20 @@ exports.findAll = async (query) => {
   const searchQuery = getSearchQuery(query)
   const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS
 
-  return await MediaBlock
-    .find(searchQuery)
-    .sort({ updatedAt: 'desc' })
-    .skip((page * limit) - limit)
-    .limit(itemLimit)
+  const { docs, totalDocs } = await MediaBlock
+    .paginate(
+      searchQuery,
+      {
+        page: page,
+        limit: itemLimit,
+        sort: { updatedAt: 'desc' }
+      }
+    )
+
+  return {
+    mediaBlocks: docs,
+    mediaBlocksCount: totalDocs
+  }
 }
 
 const findById = async (mediaBlockId) => {

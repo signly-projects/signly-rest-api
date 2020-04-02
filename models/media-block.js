@@ -1,5 +1,6 @@
 const Joi = require('joi')
 const mongoose = require('mongoose')
+const mongoosePaginate = require('mongoose-paginate-v2')
 
 const { VideoSchema } = require('~models/video')
 
@@ -33,6 +34,7 @@ const MediaBlockSchema = new mongoose.Schema(
     timestamps: true
   }
 )
+MediaBlockSchema.plugin(mongoosePaginate)
 
 const MediaBlock = mongoose.model('MediaBlock', MediaBlockSchema)
 
