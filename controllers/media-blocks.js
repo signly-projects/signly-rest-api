@@ -4,9 +4,12 @@ const MediaBlocksService = require('~services/media-blocks.service')
 
 exports.getMediaBlocks = async (req, res, next) => {
   const mediaBlocks = await MediaBlocksService.findAll(req.query)
-  const totalMediaBlocksCount = await MediaBlocksService.countAll()
+  const mediaBlocksCount = await MediaBlocksService.countAll(req.query)
 
-  res.status(200).send({ mediaBlocks: mediaBlocks, count: totalMediaBlocksCount })
+  res.status(200).send({
+    mediaBlocks: mediaBlocks,
+    mediaBlocksCount: mediaBlocksCount
+  })
 }
 
 exports.getMediaBlocksExport = async (req, res, next) => {

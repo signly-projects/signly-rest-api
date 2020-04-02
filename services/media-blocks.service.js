@@ -7,12 +7,8 @@ const AzureService = require('~services/azure.service')
 
 const MAX_ITEMS = 100
 
-exports.countAll = async () => {
-  return MediaBlock.countDocuments()
-}
-
-exports.findAll = async (query) => {
-  const { limit, search, filter } = query
+const getSearchQuery = (query) => {
+  const { search, filter } = query
 
   if (!safe(search)) {
     return []
@@ -35,7 +31,7 @@ exports.findAll = async (query) => {
     orQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
   }
 
-  let searchQuery = {
+  return {
     $and: [
       orQuery,
       {
@@ -46,10 +42,26 @@ exports.findAll = async (query) => {
       }
     ]
   }
+}
 
+exports.countAll = async (query) => {
+  if (query) {
+    return MediaBlock.countDocuments(getSearchQuery(query))
+  }
+
+  return MediaBlock.countDocuments()
+}
+
+exports.findAll = async (query) => {
+  const { limit, page } = query
+  const searchQuery = getSearchQuery(query)
   const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS
 
-  return await MediaBlock.find(searchQuery).sort({ updatedAt: 'desc' }).limit(itemLimit)
+  return await MediaBlock
+    .find(searchQuery)
+    .sort({ updatedAt: 'desc' })
+    .skip((page * limit) - limit)
+    .limit(itemLimit)
 }
 
 const findById = async (mediaBlockId) => {
