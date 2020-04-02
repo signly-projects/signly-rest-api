@@ -48,8 +48,8 @@ const getSearchQuery = (query) => {
 
     andQuery.$and.push({
       updatedAt: {
-        $gte: new Date(dateObj.start),
-        $lt: new Date(dateObj.stop)
+        $gte: dateObj.start,
+        $lt: dateObj.stop
       }
     })
   }
