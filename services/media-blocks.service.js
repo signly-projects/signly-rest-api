@@ -8,7 +8,7 @@ const AzureService = require('~services/azure.service')
 const MAX_ITEMS = 100
 
 const getSearchQuery = (query) => {
-  const { search, filter } = query
+  const { search, filter, date } = query
 
   if (!safe(search)) {
     return []
@@ -31,7 +31,7 @@ const getSearchQuery = (query) => {
     orQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
   }
 
-  return {
+  const andQuery = {
     $and: [
       orQuery,
       {
@@ -42,6 +42,19 @@ const getSearchQuery = (query) => {
       }
     ]
   }
+
+  if (date) {
+    const dateObj = JSON.parse(date)
+
+    andQuery.$and.push({
+      updatedAt: {
+        $gte: new Date(dateObj.start),
+        $lt: new Date(dateObj.stop)
+      }
+    })
+  }
+
+  return andQuery
 }
 
 exports.countAll = async (query) => {
