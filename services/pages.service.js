@@ -2,7 +2,7 @@ const safe = require('safe-regex')
 const { Page } = require('~models/page')
 const { MediaBlock } = require('~models/media-block')
 
-const MAX_ITEMS = 100
+const MAX_ITEMS = 200
 
 const getPagesWithMediaBlocks = async (queryParams, options) => {
   if (!safe) {
