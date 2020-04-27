@@ -10,17 +10,21 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
   }
 
   const query = {
-    $and: [
-      {
-        rawText: {
-          $regex: queryParams.search || '',
-          $options: 'i'
-        }
-      }
-    ]
+    $and: []
   }
 
   if (queryParams.mediaBlocksStatus) {
+    if (queryParams.search) {
+      query.$and.push(
+        {
+          rawText: {
+            $regex: queryParams.search || '',
+            $options: 'i'
+          }
+        }
+      )
+    }
+
     if (typeof queryParams.mediaBlocksStatus === 'string' || queryParams.mediaBlocksStatus instanceof String) {
       query.$and.push({ status: queryParams.mediaBlocksStatus })
     } else if (Array.isArray(queryParams.mediaBlocksStatus)) {
