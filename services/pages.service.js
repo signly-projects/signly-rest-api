@@ -1,50 +1,59 @@
 const safe = require('safe-regex')
 const { Page } = require('~models/page')
-const { MediaBlock } = require('~models/media-block')
 
 const MAX_ITEMS = 200
 
-const getPagesWithMediaBlocks = async (queryParams, options) => {
-  if (!safe) {
+const getSearchQuery = (search) => {
+  if (!safe(search)) {
     return []
   }
 
-  const query = {
+  return {
     $and: [
       {
-        rawText: {
-          $regex: queryParams.search || '',
+        uri: {
+          $regex: search || '',
           $options: 'i'
         }
       }
     ]
   }
+}
 
-  if (queryParams.mediaBlocksStatus) {
-    if (typeof queryParams.mediaBlocksStatus === 'string' || queryParams.mediaBlocksStatus instanceof String) {
-      query.$and.push({ status: queryParams.mediaBlocksStatus })
-    } else if (Array.isArray(queryParams.mediaBlocksStatus)) {
-      const statuses = queryParams.mediaBlocksStatus.map(status => { return { status: status } })
-      query.$and.push({ $or: statuses })
+const getPagesWithMediaBlocks = async (query) => {
+  const { limit, page, search, mediaBlocksStatus } = query
+  const itemLimit = limit ? parseInt(limit, 10) : MAX_ITEMS
+  const searchQuery = search ? getSearchQuery(search) : {}
+
+  const mediaBlocksQuery = { $and: [] }
+
+  if (mediaBlocksStatus.length) {
+    if (typeof mediaBlocksStatus === 'string' || mediaBlocksStatus instanceof String) {
+      mediaBlocksQuery.$and.push({ status: mediaBlocksStatus })
+    } else if (Array.isArray(mediaBlocksStatus)) {
+      const statuses = mediaBlocksStatus.map(status => { return { status: status } })
+      mediaBlocksQuery.$and.push({ $or: statuses })
     }
   }
 
-  let pages = await Page
-    .find()
-    .sort(options.sort)
-    .populate({
-      path: 'mediaBlocks',
-      model: MediaBlock,
-      options: {
-        sort: { updatedAt: 'asc' }
-      },
-      match: query
-    })
+  let { docs, totalDocs } = await Page
+    .paginate(
+      searchQuery,
+      {
+        page: page,
+        limit: itemLimit,
+        sort: { updatedAt: 'desc' },
+        populate: {
+          path: 'mediaBlocks',
+          match: mediaBlocksQuery
+        }
+      }
+    )
 
-  pages = pages.filter(page => page.mediaBlocks.length > 0)
-  pages = pages.slice(0, queryParams.limit)
-
-  return pages
+  return {
+    pages: docs,
+    count: totalDocs
+  }
 }
 
 exports.countAll = async () => {
@@ -64,7 +73,12 @@ exports.findAll = async (query) => {
     return await getPagesWithMediaBlocks(query, options)
   }
 
-  return await Page.find().limit(options.limit).sort(options.sort)
+  const pages = await Page.find().limit(options.limit).sort(options.sort)
+
+  return {
+    pages: pages,
+    count: pages.length
+  }
 }
 
 exports.findByUri = async (uri, withMediaBlocks = false) => {
