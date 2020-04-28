@@ -60,6 +60,7 @@ exports.findAll = async (query) => {
   }
 
   if (query.withMediaBlocks) {
+    options.sort = { createdAt: 'desc' }
     return await getPagesWithMediaBlocks(query, options)
   }
 
