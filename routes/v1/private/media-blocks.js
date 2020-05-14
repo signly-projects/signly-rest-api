@@ -34,5 +34,4 @@ router.get('/:id', validateObjectId, getMediaBlock)
 // PATCH /api/media-blocks/:id
 router.patch('/:id', validateObjectId, upload.single('file'), patchMediaBlock)
 
-
 module.exports = router

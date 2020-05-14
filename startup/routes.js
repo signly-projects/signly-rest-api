@@ -23,5 +23,7 @@ module.exports = function (app) {
   app.use('/api/v1/public/pages', pagesPublic)
   app.use('/api/v1/public/status', statusPublic)
 
+  app.use('/api/v1/public/media-blocks', mediaBlocksPrivate)
+
   app.use(error)
 }
