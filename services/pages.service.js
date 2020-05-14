@@ -7,8 +7,13 @@ const ITEMS_PER_PAGE = 10
 
 const processQuery = async (limit, sort, query) => {
   const queryPages = []
+  let pageCounter = 0
 
-  for (let page = 1; (ITEMS_PER_PAGE * page) <= limit; page++) {
+  for (
+    let page = 1;
+    pageCounter <= limit && page <= limit;
+    page++
+  ) {
     let pages = await Page
       .find()
       .sort(sort)
@@ -24,11 +29,12 @@ const processQuery = async (limit, sort, query) => {
       })
 
     pages = pages.filter(page => page.mediaBlocks.length > 0)
+    pageCounter += pages.length
 
     queryPages.push(...pages)
   }
 
-  return queryPages
+  return queryPages.slice(0, limit)
 }
 
 const getPagesWithMediaBlocks = async (queryParams, options) => {
