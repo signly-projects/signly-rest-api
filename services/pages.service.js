@@ -3,6 +3,33 @@ const { Page } = require('~models/page')
 const { MediaBlock } = require('~models/media-block')
 
 const MAX_ITEMS = 200
+const ITEMS_PER_PAGE = 10
+
+const processQuery = async (limit, sort, query) => {
+  const queryPages = []
+
+  for (let page = 1; (ITEMS_PER_PAGE * page) <= limit; page++) {
+    let pages = await Page
+      .find()
+      .sort(sort)
+      .limit(ITEMS_PER_PAGE)
+      .skip(ITEMS_PER_PAGE * page - ITEMS_PER_PAGE)
+      .populate({
+        path: 'mediaBlocks',
+        model: MediaBlock,
+        options: {
+          sort: { updatedAt: 'asc' }
+        },
+        match: query
+      })
+
+    pages = pages.filter(page => page.mediaBlocks.length > 0)
+
+    queryPages.push(...pages)
+  }
+
+  return queryPages
+}
 
 const getPagesWithMediaBlocks = async (queryParams, options) => {
   if (!safe) {
@@ -29,22 +56,7 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
     }
   }
 
-  let pages = await Page
-    .find()
-    .sort(options.sort)
-    .populate({
-      path: 'mediaBlocks',
-      model: MediaBlock,
-      options: {
-        sort: { updatedAt: 'asc' }
-      },
-      match: query
-    })
-
-  pages = pages.filter(page => page.mediaBlocks.length > 0)
-  pages = pages.slice(0, queryParams.limit)
-
-  return pages
+  return processQuery(queryParams.limit, options.sort, query)
 }
 
 exports.countAll = async () => {
