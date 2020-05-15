@@ -1,7 +1,7 @@
 const { Site } = require('~models/site')
+const { Page } = require('~models/page')
 
 const MAX_ITEMS = 100
-const ITEMS_PER_PAGE = 20
 
 exports.countAll = async () => {
   return Site.countDocuments()
@@ -39,36 +39,19 @@ exports.findOrCreate = async (pageUrl, pageId) => {
 
 exports.findById = async (siteId, query) => {
   if (query && query.withStats) {
-    let pageCounter = 0
-    let site
+    const site = await Site
+      .findById(siteId)
+      .populate({
+        path: 'pages'
+      })
 
-    for (
-      let page = 1;
-      pageCounter <= MAX_ITEMS && page <= MAX_ITEMS;
-      page++
-    ) {
-      const siteQuery = await Site
-        .findById(siteId)
-        .populate({
-          path: 'pages',
-          options: {
-            limit: ITEMS_PER_PAGE,
-            skip: ITEMS_PER_PAGE * page - ITEMS_PER_PAGE
-          },
-          populate: {
-            path: 'mediaBlocks',
-            model: 'MediaBlock'
-          }
-        })
-
-      if (!site) {
-        site = siteQuery
-      }
-
-      pageCounter += siteQuery.pages.length
-
-      site.pages.push(...siteQuery.pages)
-    }
+    site.pages = await Page
+      .find()
+      .where('_id')
+      .in(site.pages)
+      .populate({
+        path: 'mediaBlocks'
+      })
 
     return site
   }
