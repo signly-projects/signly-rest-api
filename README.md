@@ -100,11 +100,14 @@
 
 ## Backup & Restore CosmosDB with MongoDB database
 ### Backup
-`mongodump --uri="<connection_string>"`
+`mongodump --uri="<source_connection_string>"`
 
 ### Restore
+#### Local
 `sudo mongorestore --db <database_name> --drop <dump_folder>`
 
+#### Remote
+`mongorestore --uri="<target_connection_string>" --db <database_name> --collection <collection_name> ./path/to/file/<collection_name>.bson`
 ---
 
 ## Testing with Jest

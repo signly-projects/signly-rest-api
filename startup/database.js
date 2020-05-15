@@ -20,7 +20,14 @@ module.exports = function () {
     mongoUri = `${databaseProtocol}://${databaseHost}:${databasePort}/${databaseName}`
   }
 
+  const options = {
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 1000,
+    useNewUrlParser: true,
+    useFindAndModify: false
+  }
+
   mongoose
-    .connect(mongoUri, { useNewUrlParser: true, useFindAndModify: false })
+    .connect(mongoUri, options)
     .then(() => winston.info(`Connected to ${mongoUri}...`))
 }
