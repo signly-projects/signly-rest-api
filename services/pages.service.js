@@ -4,28 +4,37 @@ const { MediaBlock } = require('~models/media-block')
 
 const MAX_ITEMS = 200
 
+const getMediaBlockForPage = async (query, mediaBlocksIds) => {
+  return await MediaBlock
+    .find(query)
+    .where('_id')
+    .in(mediaBlocksIds)
+    .exec()
+}
+
 const processQuery = async (limit, sort, query) => {
   let pages = await Page
     .find()
     .sort(sort)
 
-  pages = await Promise.all(
-    pages.map(async (page) => {
-      page.mediaBlocks = await MediaBlock
-        .find(query)
-        .where('_id')
-        .in(page.mediaBlocks)
-        .exec()
+  const resultPages = []
 
-      return page
-    })
-  )
+  for (let i = 0; i < limit && resultPages.length < limit; i++) {
+    const page = pages[i]
 
-  pages = pages
-    .filter(page => page.mediaBlocks.length > 0)
-    .slice(0, limit)
+    if (!page) {
+      break
+    }
 
-  return pages
+    const mediaBlocks = await getMediaBlockForPage(query, page.mediaBlocks)
+
+    if (mediaBlocks.length > 0) {
+      page.mediaBlocks = mediaBlocks
+      resultPages.push(page)
+    }
+  }
+
+  return resultPages
 }
 
 const getPagesWithMediaBlocks = async (queryParams, options) => {
