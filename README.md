@@ -102,12 +102,20 @@
 ### Backup
 `mongodump --uri="<source_connection_string>"`
 
+or
+
+`mongoexport --uri="<source_connection_string>" --collection=<collection_name> --out=<collection_name>.json`
+
 ### Restore
 #### Local
 `sudo mongorestore --db <database_name> --drop <dump_folder>`
 
 #### Remote
 `mongorestore --uri="<target_connection_string>" --db <database_name> --collection <collection_name> ./path/to/file/<collection_name>.bson`
+
+or
+
+`mongoimport --uri="<target_connection_string> --collection=<collection_name> --file=<collection_name>.json`
 ---
 
 ## Testing with Jest
