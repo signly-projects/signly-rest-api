@@ -12,14 +12,16 @@ const getMediaBlockForPage = async (query, mediaBlocksIds) => {
     .exec()
 }
 
-const processQuery = async (limit, sort, query) => {
+const processQuery = async (queryParams, sort, query) => {
+  const pageQuery = queryParams.enabled ? { enabled: true } : {}
+
   let pages = await Page
-    .find()
+    .find(pageQuery)
     .sort(sort)
 
   const resultPages = []
 
-  for (let i = 0; i < limit && resultPages.length < limit; i++) {
+  for (let i = 0; i < queryParams.limit && resultPages.length < queryParams.limit; i++) {
     const page = pages[i]
 
     if (!page) {
@@ -62,27 +64,29 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
     }
   }
 
-  return processQuery(queryParams.limit, options.sort, query)
+  return processQuery(queryParams, options.sort, query)
 }
 
 exports.countAll = async () => {
   return Page.countDocuments()
 }
 
-exports.findAll = async (query) => {
+exports.findAll = async (queryParams) => {
   let options = {
     sort: {
       requested: 'desc'
     },
-    limit: query.limit ? parseInt(query.limit, 10) : MAX_ITEMS
+    limit: queryParams.limit ? parseInt(queryParams.limit, 10) : MAX_ITEMS
   }
 
-  if (query.withMediaBlocks) {
+  if (queryParams.withMediaBlocks) {
     options.sort = { createdAt: 'desc' }
-    return await getPagesWithMediaBlocks(query, options)
+    return await getPagesWithMediaBlocks(queryParams, options)
   }
 
-  return await Page.find().limit(options.limit).sort(options.sort)
+  const pageQuery = queryParams.enabled ? { enabled: true } : {}
+
+  return await Page.find(pageQuery).limit(options.limit).sort(options.sort)
 }
 
 exports.findByUri = async (uri, withMediaBlocks = false) => {
@@ -104,7 +108,8 @@ exports.findById = async (pageId, withMediaBlocks = false) => {
 exports.create = async (newPage, mediaBlocks) => {
   let page = new Page({
     requested: newPage.requested,
-    enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
+    enabled: true,
+    // enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
     title: newPage.title,
     uri: newPage.uri,
     mediaBlocks: mediaBlocks
