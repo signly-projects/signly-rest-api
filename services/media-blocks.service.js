@@ -231,3 +231,7 @@ exports.deleteVideo = async (mediaBlock) => {
 
   return await mediaBlock.save()
 }
+
+exports.deleteUntranslatedMediaBlocks = async () => {
+  return await MediaBlock.deleteMany({ status: 'untranslated' })
+}

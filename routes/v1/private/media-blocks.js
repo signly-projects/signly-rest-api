@@ -9,7 +9,8 @@ const {
   getMediaBlocksExport,
   getMediaBlock,
   getMediaBlockByNormalizedText,
-  patchMediaBlock
+  patchMediaBlock,
+  deleteMediaBlocks
 } = require('~controllers/media-blocks')
 
 const router = express.Router()
@@ -33,5 +34,8 @@ router.get('/:id', validateObjectId, getMediaBlock)
 
 // PATCH /api/media-blocks/:id
 router.patch('/:id', validateObjectId, upload.single('file'), patchMediaBlock)
+
+// DELETE /api/media-blocks
+router.delete('/', deleteMediaBlocks)
 
 module.exports = router
