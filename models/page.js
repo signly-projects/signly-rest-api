@@ -23,7 +23,8 @@ const PageSchema = new Schema(
       default: 1
     },
     site: SiteSchema,
-    mediaBlocks: [{ type: Schema.Types.ObjectId, ref: 'MediaBlock' }]
+    mediaBlocks: [{ type: Schema.Types.ObjectId, ref: 'MediaBlock' }],
+    mediaBlocksIndexes: [{ type: Schema.Types.ObjectId, ref: 'MediaBlockIndex' }],
   },
   {
     timestamps: true
@@ -34,10 +35,16 @@ const Page = mongoose.model('Page', PageSchema)
 
 function validatePage (page, type = 'create') {
   const mediaBlockSchema = {
+    index: Joi.number(),
     rawText: Joi.string().required(),
     bslScript: Joi.string().allow(''),
     status: Joi.string(),
     video: Joi.object().allow(null).allow('')
+  }
+
+  const mediaBlockIndexSchema = {
+    index: Joi.number().required(),
+    mediaBlock: Joi.object(mediaBlockSchema).required()
   }
 
   const schema = {
@@ -46,7 +53,8 @@ function validatePage (page, type = 'create') {
     requested: Joi.number(),
     site: Joi.objectId(),
     title: Joi.string(),
-    mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow(''))
+    mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow('')),
+    mediaBlocksIndexes: Joi.array().items(Joi.object(mediaBlockIndexSchema).allow(null).allow(''))
   }
   return Joi.validate(page, schema)
 }

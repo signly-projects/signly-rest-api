@@ -113,11 +113,18 @@ exports.findOrCreate = async (newMediaBlock) => {
   return mediaBlock
 }
 
+const getUniqueMediaBlocks = (newMediaBlocks) => {
+  let unique = {}
+  return newMediaBlocks.filter(mb => (!unique[mb.rawText.toLowerCase()]) && (unique[mb.rawText.toLowerCase()] = true))
+}
+
 exports.findOrCreateMediaBlocks = async (newPage, page) => {
   let mediaBlocks = []
 
   if (newPage.mediaBlocks) {
-    await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
+    const newMediaBlocks = getUniqueMediaBlocks(newPage.mediaBlocks)
+
+    await Promise.all(newMediaBlocks.map(async (newMediaBlock) => {
       let mediaBlock = await this.findOrCreate(newMediaBlock)
 
       if (page && page.mediaBlocks && page.mediaBlocks.length) {

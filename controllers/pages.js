@@ -45,12 +45,15 @@ exports.createPage = async (req, res, next) => {
   if (!page) {
     let page = await PageService.create(newPage, mediaBlocks)
     await SiteService.findOrCreate(page.uri, page._id)
+    page = await PageService.indexMediaBlocks(page, newPage)
+
     return res.status(201).send({ page: page })
   }
 
   await SiteService.findOrCreate(page.uri, page._id)
 
-  page = await PageService.updateRequest(page, mediaBlocks)
+  page = await PageService.update(page, newPage, mediaBlocks)
+  page = await PageService.indexMediaBlocks(page, newPage)
 
   res.status(200).send({ page: page })
 }

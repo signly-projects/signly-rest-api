@@ -1,10 +1,12 @@
 const safe = require('safe-regex')
+
 const { Page } = require('~models/page')
 const { MediaBlock } = require('~models/media-block')
+const { MediaBlockIndex } = require('~models/media-block-index')
 
 const MAX_ITEMS = 200
 
-const getMediaBlockForPage = async (query, mediaBlocksIds) => {
+const getMediaBlocksForPage = async (query, mediaBlocksIds) => {
   return await MediaBlock
     .find(query)
     .where('_id')
@@ -12,11 +14,33 @@ const getMediaBlockForPage = async (query, mediaBlocksIds) => {
     .exec()
 }
 
+const getMediaBlocksIndexesForPage = async (pageId, mediaBlocksIds) => {
+  return await MediaBlockIndex
+    .find({ page: pageId, mediaBlock: { $in: mediaBlocksIds } })
+    .sort({ index: 1 })
+    .exec()
+}
+
+const nestedSort = (prop1, prop2 = null, direction = 'asc') => (e1, e2) => {
+  let a, b, sortOrder
+
+  if (!e1[prop1]) {
+    return 0
+  }
+
+  a = prop2 ? e1[prop1][prop2] : e1[prop1]
+  b = prop2 ? e2[prop1][prop2] : e2[prop1]
+  sortOrder = direction === 'asc' ? 1 : -1
+
+  return (a < b) ? -sortOrder : (a > b) ? sortOrder : 0
+}
+
 const processQuery = async (queryParams, sort, query) => {
   const pageQuery = queryParams.enabled ? { enabled: true } : {}
 
   let pages = await Page
     .find(pageQuery)
+    // .populate('mediaBlocksIndexes')
     .sort(sort)
 
   const resultPages = []
@@ -28,9 +52,25 @@ const processQuery = async (queryParams, sort, query) => {
       break
     }
 
-    const mediaBlocks = await getMediaBlockForPage(query, page.mediaBlocks)
+    let mediaBlocks = await getMediaBlocksForPage(query, page.mediaBlocks)
 
     if (mediaBlocks.length > 0) {
+      const mediaBlocksIds = mediaBlocks.map(mb => mb.id)
+      const mediaBlocksIndexes = await getMediaBlocksIndexesForPage(page.id, mediaBlocksIds)
+      mediaBlocks = mediaBlocks.map(mb => {
+        for (let i = 0; i < mediaBlocksIndexes.length; i++) {
+          if (mediaBlocksIndexes[i].mediaBlock.equals(mb._id)) {
+            mb._doc.pageIndex = mediaBlocksIndexes[i].index
+            break
+          }
+        }
+
+        return mb
+      })
+
+      // Sorts mediaBlocs by page index in asc order
+      mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
+
       page.mediaBlocks = mediaBlocks
       resultPages.push(page)
     }
@@ -91,7 +131,7 @@ exports.findAll = async (queryParams) => {
 
 exports.findByUri = async (uri, withMediaBlocks = false) => {
   if (withMediaBlocks) {
-    return Page.findOne({ uri: uri }).populate('mediaBlocks')
+    return Page.findOne({ uri: uri }).populate(['mediaBlocks'])
   }
 
   return Page.findOne({ uri: uri })
@@ -130,6 +170,36 @@ exports.update = async (page, newPage, mediaBlocks) => {
 exports.updateRequest = async (page, mediaBlocks) => {
   page.requested += 1
   page.mediaBlocks.push(...mediaBlocks)
+
+  return await page.save()
+}
+
+exports.findOrCreateMediaBlockIndex = async (pageId, mediaBlockId, newIndex) => {
+  let mediaBlockIndex = await MediaBlockIndex.findOne({ page: pageId, mediaBlock: mediaBlockId })
+
+  if (!mediaBlockIndex) {
+    mediaBlockIndex = await MediaBlockIndex.create({
+      page: pageId,
+      mediaBlock: mediaBlockId,
+      index: newIndex
+    })
+  } else {
+    mediaBlockIndex.index = newIndex
+  }
+
+  return await mediaBlockIndex.save()
+}
+
+exports.indexMediaBlocks = async (page, newPage) => {
+  const savedPage = await this.findById(page._id, true)
+  page.mediaBlocksIndexes = []
+
+  await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
+    const savedMediaBlock = savedPage.mediaBlocks.find(mb => mb.normalizedText === newMediaBlock.rawText.toLowerCase())
+    const mediaBlockIndex = await this.findOrCreateMediaBlockIndex(page._id, savedMediaBlock._id, newMediaBlock.index)
+
+    page.mediaBlocksIndexes.push(mediaBlockIndex._id)
+  }))
 
   return await page.save()
 }
