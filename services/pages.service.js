@@ -17,7 +17,6 @@ const getMediaBlocksForPage = async (query, mediaBlocksIds) => {
 const getMediaBlocksIndexesForPage = async (pageId, mediaBlocksIds) => {
   return await MediaBlockIndex
     .find({ page: pageId, mediaBlock: { $in: mediaBlocksIds } })
-    .sort({ index: 1 })
     .exec()
 }
 
