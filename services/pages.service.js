@@ -14,12 +14,6 @@ const getMediaBlocksForPage = async (query, mediaBlocksIds) => {
     .exec()
 }
 
-const getMediaBlocksIndexesForPage = async (pageId, mediaBlocksIds) => {
-  return await MediaBlockIndex
-    .find({ page: pageId, mediaBlock: { $in: mediaBlocksIds } })
-    .exec()
-}
-
 const nestedSort = (prop1, prop2 = null, direction = 'asc') => (e1, e2) => {
   let a, b, sortOrder
 
@@ -39,7 +33,6 @@ const processQuery = async (queryParams, sort, query) => {
 
   let pages = await Page
     .find(pageQuery)
-    // .populate('mediaBlocksIndexes')
     .sort(sort)
 
   const resultPages = []
@@ -54,12 +47,10 @@ const processQuery = async (queryParams, sort, query) => {
     let mediaBlocks = await getMediaBlocksForPage(query, page.mediaBlocks)
 
     if (mediaBlocks.length > 0) {
-      const mediaBlocksIds = mediaBlocks.map(mb => mb.id)
-      const mediaBlocksIndexes = await getMediaBlocksIndexesForPage(page.id, mediaBlocksIds)
       mediaBlocks = mediaBlocks.map(mb => {
-        for (let i = 0; i < mediaBlocksIndexes.length; i++) {
-          if (mediaBlocksIndexes[i].mediaBlock.equals(mb._id)) {
-            mb._doc.pageIndex = mediaBlocksIndexes[i].index
+        for (let i = 0; i < page.mediaBlocksIndexes.length; i++) {
+          if (page.mediaBlocksIndexes[i].mediaBlockId === mb._id.toString()) {
+            mb._doc.pageIndex = page.mediaBlocksIndexes[i].index
             break
           }
         }
@@ -69,7 +60,6 @@ const processQuery = async (queryParams, sort, query) => {
 
       // Sorts mediaBlocs by page index in asc order
       mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
-
       page.mediaBlocks = mediaBlocks
       resultPages.push(page)
     }
@@ -195,9 +185,7 @@ exports.indexMediaBlocks = async (page, newPage) => {
 
   for (let newMediaBlock of newPage.mediaBlocks) {
     const savedMediaBlock = savedPage.mediaBlocks.find(mb => mb.normalizedText === newMediaBlock.rawText.toLowerCase())
-    const mediaBlockIndex = await this.findOrCreateMediaBlockIndex(page._id, savedMediaBlock._id, newMediaBlock.index)
-
-    page.mediaBlocksIndexes.push(mediaBlockIndex._id)
+    page.mediaBlocksIndexes.push({ index: newMediaBlock.index, mediaBlockId: savedMediaBlock._id.toString() })
   }
 
   return await page.save()
