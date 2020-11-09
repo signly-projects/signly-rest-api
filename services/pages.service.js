@@ -194,12 +194,12 @@ exports.indexMediaBlocks = async (page, newPage) => {
   const savedPage = await this.findById(page._id, true)
   page.mediaBlocksIndexes = []
 
-  await Promise.all(newPage.mediaBlocks.map(async (newMediaBlock) => {
+  for (let newMediaBlock of newPage.mediaBlocks) {
     const savedMediaBlock = savedPage.mediaBlocks.find(mb => mb.normalizedText === newMediaBlock.rawText.toLowerCase())
     const mediaBlockIndex = await this.findOrCreateMediaBlockIndex(page._id, savedMediaBlock._id, newMediaBlock.index)
 
     page.mediaBlocksIndexes.push(mediaBlockIndex._id)
-  }))
+  }
 
   return await page.save()
 }

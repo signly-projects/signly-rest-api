@@ -78,7 +78,7 @@ exports.patchMediaBlock = async (req, res, next) => {
 
 exports.deleteMediaBlocks = async (req, res, next) => {
   if (req.query && req.query.status !== 'untranslated') {
-    res.status(422).send('Missing query parameters')
+    return res.status(422).send('Missing query parameters')
   }
 
   const result = await MediaBlocksService.deleteUntranslatedMediaBlocks()
