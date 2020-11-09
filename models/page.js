@@ -24,7 +24,7 @@ const PageSchema = new Schema(
     },
     site: SiteSchema,
     mediaBlocks: [{ type: Schema.Types.ObjectId, ref: 'MediaBlock' }],
-    mediaBlocksIndexes: [{ type: Schema.Types.ObjectId, ref: 'MediaBlockIndex' }],
+    mediaBlocksIndexes: [Schema.Types.Mixed]
   },
   {
     timestamps: true
@@ -42,19 +42,13 @@ function validatePage (page, type = 'create') {
     video: Joi.object().allow(null).allow('')
   }
 
-  const mediaBlockIndexSchema = {
-    index: Joi.number().required(),
-    mediaBlock: Joi.object(mediaBlockSchema).required()
-  }
-
   const schema = {
     uri: type === 'create' ? Joi.string().uri().required() : Joi.string().uri(),
     enabled: Joi.boolean(),
     requested: Joi.number(),
     site: Joi.objectId(),
     title: Joi.string(),
-    mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow('')),
-    mediaBlocksIndexes: Joi.array().items(Joi.object(mediaBlockIndexSchema).allow(null).allow(''))
+    mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow(''))
   }
   return Joi.validate(page, schema)
 }
