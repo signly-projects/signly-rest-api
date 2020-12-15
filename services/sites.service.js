@@ -45,15 +45,26 @@ exports.findById = async (siteId, query) => {
         path: 'pages'
       })
 
-    site.pages = await Page
-      .find()
-      .where('_id')
-      .in(site.pages)
-      .populate({
-        path: 'mediaBlocks'
-      })
+    const MAX_PAGES_PER_QUERY = 10
+    const fetchingRounds = (site.pages.length / MAX_PAGES_PER_QUERY).toFixed()
 
-    return site
+    const pages = []
+
+    for (let i = 0; i < fetchingRounds; i++) {
+      const pageIds = site.pages.slice(i * MAX_PAGES_PER_QUERY, MAX_PAGES_PER_QUERY)
+      const foundPages = await Page
+        .find()
+        .where('_id')
+        .in(pageIds)
+        .populate({
+          path: 'mediaBlocks'
+        })
+      pages.push(...foundPages)
+    }
+
+    site.pages = pages
+    // This updates pages added to a site - shouldn't be here though
+    return await site.save()
   }
 
   return Site.findById(siteId)
