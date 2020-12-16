@@ -2,6 +2,7 @@ const { Site } = require('~models/site')
 const { Page } = require('~models/page')
 
 const MAX_ITEMS = 100
+const MAX_PAGES_PER_QUERY = 20
 
 exports.countAll = async () => {
   return Site.countDocuments()
@@ -41,30 +42,43 @@ exports.findById = async (siteId, query) => {
   if (query && query.withStats) {
     const site = await Site
       .findById(siteId)
-      .populate({
-        path: 'pages'
+
+    const sitePagesCount = await Page
+      .countDocuments({
+        uri: {
+          $regex: site.url,
+          $options: 'i'
+        }
       })
 
-    const MAX_PAGES_PER_QUERY = 10
-    const fetchingRounds = (site.pages.length / MAX_PAGES_PER_QUERY).toFixed()
-
+    const fetchingRounds = ((sitePagesCount / MAX_PAGES_PER_QUERY) + 1).toFixed()
     const pages = []
 
-    for (let i = 0; i < fetchingRounds; i++) {
-      const pageIds = site.pages.slice(i * MAX_PAGES_PER_QUERY, MAX_PAGES_PER_QUERY)
-      const foundPages = await Page
-        .find()
-        .where('_id')
-        .in(pageIds)
-        .populate({
-          path: 'mediaBlocks'
-        })
-      pages.push(...foundPages)
+    for (let i = 1; i <= fetchingRounds; i++) {
+      const { docs } = await Page
+        .paginate(
+          {
+            uri: {
+              $regex: site.url,
+              $options: 'i'
+            }
+          },
+          {
+            page: i,
+            limit: MAX_PAGES_PER_QUERY,
+            sort: { createdAt: 'asc' },
+            populate: {
+              path: 'mediaBlocks'
+            }
+          }
+        )
+
+      pages.push(...docs)
     }
 
     site.pages = pages
-    // This updates pages added to a site - shouldn't be here though
-    return await site.save()
+
+    return site
   }
 
   return Site.findById(siteId)
