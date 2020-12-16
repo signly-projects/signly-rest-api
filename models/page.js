@@ -1,6 +1,7 @@
 const Joi = require('joi')
 Joi.objectId = require('joi-objectid')(Joi)
 const mongoose = require('mongoose')
+const mongoosePaginate = require('mongoose-paginate-v2')
 const Schema = mongoose.Schema
 
 const { SiteSchema } = require('~models/site')
@@ -30,6 +31,7 @@ const PageSchema = new Schema(
     timestamps: true
   }
 )
+PageSchema.plugin(mongoosePaginate)
 
 const Page = mongoose.model('Page', PageSchema)
 
