@@ -56,7 +56,7 @@ exports.getSite = async (req, res, next) => {
     mediaBlocks.all = [...mediaBlocks.all, ...page.mediaBlocks]
 
     page.mediaBlocks.forEach(mb => {
-      const currentWords = mb.rawText.split(' ')
+      const currentWords = mb.rawText.toLowerCase().split(' ')
       words.all.push(...currentWords)
 
       pageStats.words.all += currentWords.length
@@ -85,10 +85,10 @@ exports.getSite = async (req, res, next) => {
     })
   })
 
-  const allUniqueMbs = [...new Set(mediaBlocks.all)]
-  const translatedUniqueMbs = [...new Set(mediaBlocks.translated)]
-  const untranslatedUniqueMbs = [...new Set(mediaBlocks.untranslated)]
-  const otherUniqueMbs = [...new Set(mediaBlocks.other)]
+  const allUniqueMbs = [...new Set(mediaBlocks.all.map(mb => mb.normalizedText))]
+  const translatedUniqueMbs = [...new Set(mediaBlocks.translated.map(mb => mb.normalizedText))]
+  const untranslatedUniqueMbs = [...new Set(mediaBlocks.untranslated.map(mb => mb.normalizedText))]
+  const otherUniqueMbs = [...new Set(mediaBlocks.other.map(mb => mb.normalizedText))]
 
   const stats = {
     textSegments: {
@@ -110,10 +110,10 @@ exports.getSite = async (req, res, next) => {
       other: words.other.length,
     },
     uniqueWords: {
-      all: flatMap(mb => mb.rawText.split(' '), allUniqueMbs).length,
-      translated: flatMap(mb => mb.rawText.split(' '), translatedUniqueMbs).length,
-      untranslated: flatMap(mb => mb.rawText.split(' '), untranslatedUniqueMbs).length,
-      other: flatMap(mb => mb.rawText.split(' '), otherUniqueMbs).length,
+      all: flatMap(mb => mb.split(' '), allUniqueMbs).length,
+      translated: flatMap(mb => mb.split(' '), translatedUniqueMbs).length,
+      untranslated: flatMap(mb => mb.split(' '), untranslatedUniqueMbs).length,
+      other: flatMap(mb => mb.split(' '), otherUniqueMbs).length,
     }
   }
 
