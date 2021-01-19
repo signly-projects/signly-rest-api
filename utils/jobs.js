@@ -29,7 +29,7 @@ if (ENV === 'prod' || ENV === 'stag' || ENV === 'dev') {
   jobs = new Jobs('jobs', process.env.REDIS_URI)
 }
 
-const MAX_ATTEMPTS = 10
+const MAX_ATTEMPTS = 30
 const BACKOFF_TIME = 30000
 
 jobs.process(async (job) => {
