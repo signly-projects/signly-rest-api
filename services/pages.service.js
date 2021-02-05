@@ -61,6 +61,7 @@ const processQuery = async (queryParams, sort, query) => {
       // Sorts mediaBlocs by page index in asc order
       mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
       page.mediaBlocks = mediaBlocks
+      page.mediaBlocksIndexes = undefined
       resultPages.push(page)
     }
   }
