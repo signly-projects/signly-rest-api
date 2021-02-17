@@ -28,35 +28,37 @@ const nestedSort = (prop1, prop2 = null, direction = 'asc') => (e1, e2) => {
   return (a < b) ? -sortOrder : (a > b) ? sortOrder : 0
 }
 
-const processQuery = async (queryParams, sort, query) => {
-  const pageQuery = queryParams.enabled ? { enabled: true } : {}
+function addPageIndexToMediaBlocks (mediaBlocks, mediaBlocksIndexes) {
+  return mediaBlocks.map(mb => {
+    for (let i = 0; i < mediaBlocksIndexes.length; i++) {
+      if (mediaBlocksIndexes[i].mediaBlockId === mb._id.toString()) {
+        mb._doc.pageIndex = mediaBlocksIndexes[i].index
+        break
+      }
+    }
 
+    return mb
+  })
+}
+
+const processQuery = async (pagesLimit, pagesSort, mediaBlocksQuery) => {
   let pages = await Page
-    .find(pageQuery)
-    .sort(sort)
+    .find({ enabled: true })
+    .sort(pagesSort)
 
   const resultPages = []
 
-  for (let i = 0; i < queryParams.limit && resultPages.length < queryParams.limit; i++) {
+  for (let i = 0; i < pagesLimit && resultPages.length < pagesLimit; i++) {
     const page = pages[i]
 
     if (!page) {
       break
     }
 
-    let mediaBlocks = await getMediaBlocksForPage(query, page.mediaBlocks)
+    let mediaBlocks = await getMediaBlocksForPage(mediaBlocksQuery, page.mediaBlocks)
 
     if (mediaBlocks.length > 0) {
-      mediaBlocks = mediaBlocks.map(mb => {
-        for (let i = 0; i < page.mediaBlocksIndexes.length; i++) {
-          if (page.mediaBlocksIndexes[i].mediaBlockId === mb._id.toString()) {
-            mb._doc.pageIndex = page.mediaBlocksIndexes[i].index
-            break
-          }
-        }
-
-        return mb
-      })
+      mediaBlocks = addPageIndexToMediaBlocks(mediaBlocks, page.mediaBlocksIndexes)
 
       // Sorts mediaBlocs by page index in asc order
       mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
@@ -74,7 +76,7 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
     return []
   }
 
-  const query = {
+  const mediaBlocksQuery = {
     $and: [
       {
         rawText: {
@@ -87,14 +89,14 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
 
   if (queryParams.mediaBlocksStatus) {
     if (typeof queryParams.mediaBlocksStatus === 'string' || queryParams.mediaBlocksStatus instanceof String) {
-      query.$and.push({ status: queryParams.mediaBlocksStatus })
+      mediaBlocksQuery.$and.push({ status: queryParams.mediaBlocksStatus })
     } else if (Array.isArray(queryParams.mediaBlocksStatus)) {
       const statuses = queryParams.mediaBlocksStatus.map(status => { return { status: status } })
-      query.$and.push({ $or: statuses })
+      mediaBlocksQuery.$and.push({ $or: statuses })
     }
   }
 
-  return processQuery(queryParams, options.sort, query)
+  return processQuery(queryParams.limit, options.sort, mediaBlocksQuery)
 }
 
 exports.countAll = async () => {
@@ -202,4 +204,23 @@ exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
     { $pull: { mediaBlocks: mediaBlockId } },
     { multi: true }
   )
+}
+
+exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
+  const pageLimit = queryParams.limit ? parseInt(queryParams.limit, 10) : MAX_ITEMS
+  const mediaBlocksQuery = {
+    $and: [
+      {
+        rawText: {
+          $regex: queryParams.search || '',
+          $options: 'i'
+        }
+      },
+      {
+        status: 'untranslated'
+      }
+    ]
+  }
+
+  return processQuery(pageLimit, { requested: 'desc' }, mediaBlocksQuery)
 }

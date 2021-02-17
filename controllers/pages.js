@@ -87,3 +87,11 @@ exports.deletePage = async (req, res, next) => {
 
   res.status(200).send({ page: page })
 }
+
+/* LATEST FUNCTIONS */
+exports.getStudioPages = async (req, res, next) => {
+  const pages = await PageService.findAllWithUntranslatedMediablocks(req.query)
+  const mediaBlocksCount = MediaBlockService.countAll({ filter: 'untranslated' })
+
+  res.status(200).send({ pages: pages, untranslatedCount: mediaBlocksCount })
+}
