@@ -187,6 +187,37 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
   return await mediaBlock.save()
 }
 
+exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail) => {
+  if (!mediaBlock && !newVideoFile) {
+    return null
+  }
+
+  const result = await AzureService.storeVideoFile(mediaBlock._id, newVideoFile)
+
+  if (mediaBlock.video) {
+    mediaBlock.video.videoFile = newVideoFile
+    mediaBlock.video.uri = null
+    mediaBlock.video.encodingState = result.encodingState
+    mediaBlock.video.amsIdentifier = result.amsIdentifier
+    mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
+    mediaBlock.video.translatorEmail = translatorEmail
+
+    mediaBlock.markModified('video')
+  } else {
+    mediaBlock.video = new Video({
+      uri: null,
+      encodingState: result.encodingState,
+      amsIdentifier: result.amsIdentifier,
+      amsIdentifiers: [result.amsIdentifier],
+      translatorEmail: translatorEmail
+    })
+  }
+
+  mediaBlock.status = 'processing'
+
+  return await mediaBlock.save()
+}
+
 exports.updateVideoState = async (mediaBlockId, encodingState, videoUri) => {
   let mediaBlock = await findById(mediaBlockId)
 

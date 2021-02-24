@@ -5,7 +5,7 @@ const VideoSchema = new mongoose.Schema(
   {
     uri: {
       type: String,
-      default: ''
+      default: null
     },
     videoFile: {
       type: Object,
@@ -17,11 +17,15 @@ const VideoSchema = new mongoose.Schema(
     },
     amsIdentifier: {
       type: String,
-      default: ''
+      default: null
     },
     amsIdentifiers: [{
       type: String
-    }]
+    }],
+    translatorEmail: {
+      type: String,
+      default: null
+    }
   },
   {
     timestamps: true
