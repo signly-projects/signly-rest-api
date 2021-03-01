@@ -19,10 +19,7 @@ exports.createVideo = async (req, res, next) => {
     return res.status(401).send('Video file not provided.')
   }
 
-  // eslint-disable-next-line no-console
-  console.log('Translator email', req.body.translatorEmail)
-
-  mediaBlock = await MediaBlocksService.updateOrCreateVideo(mediaBlock, req.file, req.body.translatorEmail)
+  mediaBlock = await MediaBlocksService.updateOrCreateVideo(mediaBlock, req.file, req.body.translatorEmail, req.body.translatorFullName)
 
   res.status(200).send({ mediaBlock })
 }

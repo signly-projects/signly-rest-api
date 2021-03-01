@@ -1,5 +1,4 @@
 const safe = require('safe-regex')
-const mongoose = require('mongoose')
 const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
@@ -14,11 +13,8 @@ const getSearchQuery = (query) => {
     return []
   }
 
-  const orQuery = {}
-  const andQuery = {}
-
-  if (search) {
-    orQuery.$or = [
+  const orQuery = {
+    $or: [
       {
         rawText: {
           $regex: `${search || ''}`,
@@ -26,19 +22,18 @@ const getSearchQuery = (query) => {
         }
       }
     ]
-
-    andQuery.$and = [
-      orQuery
-    ]
   }
 
-  if (filter) {
-    andQuery.$and.push({
-      status: {
-        $regex: `^${filter || ''}`,
-        $options: 'i'
+  const andQuery = {
+    $and: [
+      orQuery,
+      {
+        status: {
+          $regex: `^${filter || ''}`,
+          $options: 'i'
+        }
       }
-    })
+    ]
   }
 
   if (date) {
@@ -185,7 +180,7 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
   return await mediaBlock.save()
 }
 
-exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail) => {
+exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail, translatorFullName) => {
   if (!mediaBlock && !newVideoFile) {
     return null
   }
@@ -199,6 +194,7 @@ exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail) 
     mediaBlock.video.amsIdentifier = result.amsIdentifier
     mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
     mediaBlock.video.translatorEmail = translatorEmail
+    mediaBlock.video.translatorFullName = translatorFullName
 
     mediaBlock.markModified('video')
   } else {
@@ -207,7 +203,8 @@ exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail) 
       encodingState: result.encodingState,
       amsIdentifier: result.amsIdentifier,
       amsIdentifiers: [result.amsIdentifier],
-      translatorEmail: translatorEmail
+      translatorEmail: translatorEmail,
+      translatorFullName: translatorFullName
     })
   }
 

@@ -25,6 +25,10 @@ const VideoSchema = new mongoose.Schema(
     translatorEmail: {
       type: String,
       default: null
+    },
+    translatorFullName: {
+      type: String,
+      default: null
     }
   },
   {
