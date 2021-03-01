@@ -14,33 +14,31 @@ const getSearchQuery = (query) => {
     return []
   }
 
-  const orQuery = {
-    $or: [
+  const orQuery = {}
+  const andQuery = {}
+
+  if (search) {
+    orQuery.$or = [
       {
         rawText: {
-          $regex: search || '',
+          $regex: `${search || ''}`,
           $options: 'i'
         }
       }
     ]
-  }
 
-  const validId = mongoose.Types.ObjectId.isValid(search)
-
-  if (validId) {
-    orQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
-  }
-
-  const andQuery = {
-    $and: [
-      orQuery,
-      {
-        status: {
-          $regex: `^${filter}` || '',
-          $options: 'i'
-        }
-      }
+    andQuery.$and = [
+      orQuery
     ]
+  }
+
+  if (filter) {
+    andQuery.$and.push({
+      status: {
+        $regex: `^${filter || ''}`,
+        $options: 'i'
+      }
+    })
   }
 
   if (date) {
