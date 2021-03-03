@@ -60,7 +60,7 @@ const processQuery = async (pagesLimit, pagesSort, mediaBlocksQuery) => {
     if (mediaBlocks.length > 0) {
       mediaBlocks = addPageIndexToMediaBlocks(mediaBlocks, page.mediaBlocksIndexes)
 
-      // Sorts mediaBlocs by page index in asc order
+      // Sorts mediaBlocks by page index in asc order
       mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
       page.mediaBlocks = mediaBlocks
       page.mediaBlocksIndexes = undefined
@@ -99,8 +99,8 @@ const getPagesWithMediaBlocks = async (queryParams, options) => {
   return processQuery(queryParams.limit, options.sort, mediaBlocksQuery)
 }
 
-exports.countAll = async () => {
-  return Page.countDocuments()
+exports.countAll = async (query = {}) => {
+  return Page.countDocuments(query)
 }
 
 exports.findAll = async (queryParams) => {
@@ -206,21 +206,56 @@ exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
   )
 }
 
-exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
-  const pageLimit = queryParams.limit ? parseInt(queryParams.limit, 10) : MAX_ITEMS
-  const mediaBlocksQuery = {
-    $and: [
+const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
+  const pages = []
+
+  const result = await Page
+    .paginate(
       {
-        rawText: {
-          $regex: queryParams.search || '',
-          $options: 'i'
-        }
+        enabled: true
       },
       {
-        status: 'untranslated'
+        page: pageQuery.page,
+        limit: pageQuery.limit,
+        sort: { createdAt: 'asc' },
+        populate: {
+          path: 'mediaBlocks',
+          match: {
+            status: 'untranslated',
+            rawText: {
+              $regex: `${mediaBlocksQuery.search}` || '',
+              $options: 'i'
+            }
+          }
+        }
       }
-    ]
+    )
+
+  result.docs.forEach((page) => {
+    if (page.mediaBlocks.length > 0) {
+      let mediaBlocks = addPageIndexToMediaBlocks(page.mediaBlocks, page.mediaBlocksIndexes)
+
+      // Sorts mediaBlocks by page index in asc order
+      mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
+      page.mediaBlocks = mediaBlocks
+      page.mediaBlocksIndexes = undefined
+      pages.push(page)
+    }
+  })
+
+  return { pages, totalPages: result.totalDocs }
+}
+
+exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
+  const pageQuery = {
+    limit: parseInt(queryParams.limit, 10),
+    page: parseInt(queryParams.page, 10)
   }
 
-  return processQuery(pageLimit, { requested: 'desc' }, mediaBlocksQuery)
+  const mediaBlocksQuery = {
+    status: 'untranslated',
+    search: queryParams.search || ''
+  }
+
+  return newProcessQuery(pageQuery, mediaBlocksQuery)
 }

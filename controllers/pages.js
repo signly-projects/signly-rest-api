@@ -89,9 +89,18 @@ exports.deletePage = async (req, res, next) => {
 }
 
 /* LATEST FUNCTIONS */
-exports.getStudioPages = async (req, res, next) => {
-  const pages = await PageService.findAllWithUntranslatedMediablocks(req.query)
-  const mediaBlocksCount = MediaBlockService.countAll({ filter: 'untranslated' })
 
-  res.status(200).send({ pages: pages, untranslatedCount: mediaBlocksCount })
+exports.getStudioPages = async (req, res, next) => {
+  const { pages, totalPages } = await PageService.findAllWithUntranslatedMediablocks(req.query)
+  const untranslatedMediaBlocks = new Set()
+
+  for (let i = 0; i < pages.length; i++) {
+    untranslatedMediaBlocks.add(...pages[i].mediaBlocks.map(mb => mb._id))
+  }
+
+  res.status(200).send({
+    pages: pages,
+    pageCount: totalPages,
+    untranslatedMediaBlockCount: untranslatedMediaBlocks.size
+  })
 }
