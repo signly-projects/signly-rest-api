@@ -2,7 +2,7 @@ const express = require('express')
 const validateObjectId = require('~middleware/validateObjectId')
 const validateUri = require('~middleware/validateUri')
 const mediaBlocks = require('~routes/v1/private/pages/media-blocks')
-const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage } = require('~controllers/pages')
+const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage, getStudioPages } = require('~controllers/pages')
 
 const router = express.Router()
 
@@ -11,6 +11,9 @@ router.get('/', getPages)
 
 // GET /api/pages/search
 router.get('/search', validateUri, getPageByUri)
+
+// GET /api/pages/studio
+router.get('/studio', getStudioPages)
 
 // GET /api/pages/:id
 router.get('/:id', validateObjectId, getPage)

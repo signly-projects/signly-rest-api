@@ -13,6 +13,10 @@ const {
   deleteMediaBlocks
 } = require('~controllers/media-blocks')
 
+const {
+  createVideo
+} = require('~controllers/media-blocks/videos')
+
 const router = express.Router()
 
 const upload = multer({
@@ -31,6 +35,8 @@ router.get('/export', getMediaBlocksExport)
 
 // GET /api/media-blocks/:id
 router.get('/:id', validateObjectId, getMediaBlock)
+
+router.post('/:id/videos', validateObjectId, upload.single('file'), createVideo)
 
 // PATCH /api/media-blocks/:id
 router.patch('/:id', validateObjectId, upload.single('file'), patchMediaBlock)

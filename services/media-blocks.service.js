@@ -1,5 +1,4 @@
 const safe = require('safe-regex')
-const mongoose = require('mongoose')
 const { deleteFile } = require('~utils/storage')
 const { MediaBlock } = require('~models/media-block')
 const { Video } = require('~models/video')
@@ -18,17 +17,11 @@ const getSearchQuery = (query) => {
     $or: [
       {
         rawText: {
-          $regex: search || '',
+          $regex: `${search || ''}`,
           $options: 'i'
         }
       }
     ]
-  }
-
-  const validId = mongoose.Types.ObjectId.isValid(search)
-
-  if (validId) {
-    orQuery.$or.push({ _id: mongoose.Types.ObjectId(search) })
   }
 
   const andQuery = {
@@ -36,7 +29,7 @@ const getSearchQuery = (query) => {
       orQuery,
       {
         status: {
-          $regex: `^${filter}` || '',
+          $regex: `^${filter || ''}`,
           $options: 'i'
         }
       }
@@ -183,6 +176,39 @@ exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
   }
 
   mediaBlock.bslScript = newMediaBlock.bslScript || mediaBlock.bslScript
+
+  return await mediaBlock.save()
+}
+
+exports.updateOrCreateVideo = async (mediaBlock, newVideoFile, translatorEmail, translatorFullName) => {
+  if (!mediaBlock && !newVideoFile) {
+    return null
+  }
+
+  const result = await AzureService.storeVideoFile(mediaBlock._id, newVideoFile)
+
+  if (mediaBlock.video) {
+    mediaBlock.video.videoFile = newVideoFile
+    mediaBlock.video.uri = null
+    mediaBlock.video.encodingState = result.encodingState
+    mediaBlock.video.amsIdentifier = result.amsIdentifier
+    mediaBlock.video.amsIdentifiers.unshift(result.amsIdentifier)
+    mediaBlock.video.translatorEmail = translatorEmail
+    mediaBlock.video.translatorFullName = translatorFullName
+
+    mediaBlock.markModified('video')
+  } else {
+    mediaBlock.video = new Video({
+      uri: null,
+      encodingState: result.encodingState,
+      amsIdentifier: result.amsIdentifier,
+      amsIdentifiers: [result.amsIdentifier],
+      translatorEmail: translatorEmail,
+      translatorFullName: translatorFullName
+    })
+  }
+
+  mediaBlock.status = 'processing'
 
   return await mediaBlock.save()
 }
