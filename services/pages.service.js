@@ -221,11 +221,7 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
         populate: {
           path: 'mediaBlocks',
           match: {
-            status: 'untranslated',
-            rawText: {
-              $regex: `${mediaBlocksQuery.search}` || '',
-              $options: 'i'
-            }
+            status: 'untranslated'
           }
         }
       }
@@ -233,13 +229,17 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
 
   result.docs.forEach((page) => {
     if (page.mediaBlocks.length > 0) {
-      let mediaBlocks = addPageIndexToMediaBlocks(page.mediaBlocks, page.mediaBlocksIndexes)
+      let mediaBlocks = page.mediaBlocks.filter(mb => mb.rawText.match(new RegExp(mediaBlocksQuery.search, 'i')))
 
-      // Sorts mediaBlocks by page index in asc order
-      mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
-      page.mediaBlocks = mediaBlocks
-      page.mediaBlocksIndexes = undefined
-      pages.push(page)
+      if (mediaBlocks.length) {
+        mediaBlocks = addPageIndexToMediaBlocks(mediaBlocks, page.mediaBlocksIndexes)
+
+        // Sorts mediaBlocks by page index in asc order
+        mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
+        page.mediaBlocks = mediaBlocks
+        page.mediaBlocksIndexes = undefined
+        pages.push(page)
+      }
     }
   })
 
