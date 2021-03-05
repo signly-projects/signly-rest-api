@@ -104,3 +104,12 @@ exports.getStudioPages = async (req, res, next) => {
     untranslatedMediaBlockCount: untranslatedMediaBlocks.size
   })
 }
+
+exports.getStudioPageCount = async (req, res, next) => {
+  const { pageCount, untranslatedMediaBlockCount } = await PageService.countAllUntranslatedMediablocks()
+
+  res.status(200).send({
+    pageCount,
+    untranslatedMediaBlockCount
+  })
+}

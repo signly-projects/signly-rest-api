@@ -259,3 +259,42 @@ exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
 
   return newProcessQuery(pageQuery, mediaBlocksQuery)
 }
+
+exports.countAllUntranslatedMediablocks = async () => {
+  const pagesPerQuery = 10
+  const pageCount = await Page.countDocuments({ enabled: true })
+
+  const fetchingRounds = ((pageCount / pagesPerQuery) + 1).toFixed()
+  let totalPages = 0
+  const untranslatedMediaBlocks = new Set()
+
+  for (let i = 1; i <= fetchingRounds; i++) {
+    const result = await Page
+      .paginate(
+        {
+          enabled: true
+        },
+        {
+          page: i,
+          limit: pagesPerQuery,
+          sort: { createdAt: 'asc' },
+          populate: {
+            path: 'mediaBlocks',
+            match: {
+              status: 'untranslated'
+            }
+          }
+        }
+      )
+
+    result.docs.forEach((page) => {
+      if (page.mediaBlocks.length > 0) {
+        untranslatedMediaBlocks.add(...page.mediaBlocks.map(mb => mb.rawText))
+      }
+    })
+
+    totalPages = result.totalDocs
+  }
+
+  return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size }
+}
