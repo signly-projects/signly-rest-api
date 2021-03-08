@@ -61,7 +61,8 @@ exports.findById = async (siteId, query) => {
             uri: {
               $regex: site.url,
               $options: 'i'
-            }
+            },
+            enabled: true
           },
           {
             page: i,
