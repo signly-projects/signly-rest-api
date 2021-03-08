@@ -14,6 +14,10 @@ const getMediaBlocksForPage = async (query, mediaBlocksIds) => {
     .exec()
 }
 
+const getUntranslatedMediaBlocksByIds = async (mediaBlocksIds) => {
+  return await MediaBlock.find({ status: 'untranslated', _id: { $in: mediaBlocksIds } })
+}
+
 const nestedSort = (prop1, prop2 = null, direction = 'asc') => (e1, e2) => {
   let a, b, sortOrder
 
@@ -276,22 +280,24 @@ exports.countAllUntranslatedMediablocks = async () => {
         },
         {
           page: i,
-          limit: pagesPerQuery,
-          sort: { createdAt: 'asc' },
-          populate: {
-            path: 'mediaBlocks',
-            match: {
-              status: 'untranslated'
-            }
-          }
+          limit: pagesPerQuery
         }
       )
 
-    result.docs.forEach((page) => {
-      if (page.mediaBlocks.length > 0) {
-        untranslatedMediaBlocks.add(...page.mediaBlocks.map(mb => mb.rawText))
+    const pages = result.docs
+
+    for (let j = 0; j < pages.length; j++) {
+      const pageMediaBlocks = pages[j].mediaBlocks
+      if (pageMediaBlocks.length > 0) {
+        const mediaBlocks = await getUntranslatedMediaBlocksByIds(pageMediaBlocks)
+
+        if (mediaBlocks.length) {
+          mediaBlocks.forEach(mb => {
+            untranslatedMediaBlocks.add(mb._doc._id.toString())
+          })
+        }
       }
-    })
+    }
 
     totalPages = result.totalDocs
   }
