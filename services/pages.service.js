@@ -221,7 +221,7 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
       {
         page: pageQuery.page,
         limit: pageQuery.limit,
-        sort: { createdAt: 'asc' },
+        sort: { createdAt: 'desc' },
         populate: {
           path: 'mediaBlocks',
           match: {
