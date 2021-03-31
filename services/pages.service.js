@@ -216,7 +216,11 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
   const result = await Page
     .paginate(
       {
-        enabled: true
+        enabled: true,
+        uri: {
+          $regex: `^${pageQuery.websiteUrl || ''}`,
+          $options: 'i'
+        }
       },
       {
         page: pageQuery.page,
@@ -257,7 +261,8 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
 exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
   const pageQuery = {
     limit: parseInt(queryParams.limit, 10),
-    page: parseInt(queryParams.page, 10)
+    page: parseInt(queryParams.page, 10),
+    websiteUrl: queryParams.website
   }
 
   const mediaBlocksQuery = {
