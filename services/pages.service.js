@@ -225,7 +225,11 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
         populate: {
           path: 'mediaBlocks',
           match: {
-            status: 'untranslated'
+            status: 'untranslated',
+            updatedAt: {
+              $gte: mediaBlocksQuery.startDate,
+              $lt: mediaBlocksQuery.stopDate
+            }
           }
         }
       }
@@ -258,7 +262,9 @@ exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
 
   const mediaBlocksQuery = {
     status: 'untranslated',
-    search: queryParams.search || ''
+    search: queryParams.search || '',
+    startDate: queryParams.startDate,
+    stopDate: queryParams.stopDate
   }
 
   return newProcessQuery(pageQuery, mediaBlocksQuery)
