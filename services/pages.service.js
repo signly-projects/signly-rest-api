@@ -281,6 +281,7 @@ exports.countAllUntranslatedMediablocks = async () => {
 
   const fetchingRounds = ((pageCount / pagesPerQuery) + 1).toFixed()
   let totalPages = 0
+  let untranslatedWordsCounter = 0
   const untranslatedMediaBlocks = new Set()
 
   for (let i = 1; i <= fetchingRounds; i++) {
@@ -305,6 +306,7 @@ exports.countAllUntranslatedMediablocks = async () => {
         if (mediaBlocks.length) {
           mediaBlocks.forEach(mb => {
             untranslatedMediaBlocks.add(mb._doc._id.toString())
+            untranslatedWordsCounter += mb.rawText.split(' ').length
           })
         }
       }
@@ -313,5 +315,7 @@ exports.countAllUntranslatedMediablocks = async () => {
     totalPages = result.totalDocs
   }
 
-  return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size }
+  console.log(untranslatedWordsCounter)
+
+  return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size, untranslatedWordCount: untranslatedWordsCounter }
 }
