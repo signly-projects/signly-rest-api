@@ -2,7 +2,7 @@ const { validatePage } = require('~models/page')
 
 const SiteService = require('~services/sites.service')
 const PageService = require('~services/pages.service')
-const MediaBlockService = require('~services/media-blocks.service')
+const MediaBlocksService = require('~services/media-blocks.service')
 
 exports.getPages = async (req, res, next) => {
   const pages = await PageService.findAll(req.query)
@@ -40,7 +40,7 @@ exports.createPage = async (req, res, next) => {
   }
 
   let page = await PageService.findByUri(decodeURIComponent(newPage.uri))
-  let mediaBlocks = await MediaBlockService.findOrCreateMediaBlocks(newPage, page)
+  let mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
 
   if (!page) {
     let page = await PageService.create(newPage, mediaBlocks)
@@ -72,7 +72,7 @@ exports.patchPage = async (req, res, next) => {
     return res.status(404).send('Page with the given ID not found.')
   }
 
-  let mediaBlocks = await MediaBlockService.findOrCreateMediaBlocks(newPage, page)
+  let mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
 
   page = await PageService.update(page, newPage, mediaBlocks)
   res.status(200).send({ page: page })
@@ -106,10 +106,11 @@ exports.getStudioPages = async (req, res, next) => {
 }
 
 exports.getStudioPageCount = async (req, res, next) => {
-  const { pageCount, untranslatedMediaBlockCount } = await PageService.countAllUntranslatedMediablocks()
+  const { pageCount, untranslatedMediaBlockCount, untranslatedWordCount } = await PageService.countAllUntranslatedMediablocks()
 
   res.status(200).send({
     pageCount,
-    untranslatedMediaBlockCount
+    untranslatedMediaBlockCount,
+    untranslatedWordCount
   })
 }

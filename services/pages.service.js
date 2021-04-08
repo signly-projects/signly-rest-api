@@ -216,7 +216,11 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
   const result = await Page
     .paginate(
       {
-        enabled: true
+        enabled: true,
+        uri: {
+          $regex: `^${pageQuery.websiteUrl || ''}`,
+          $options: 'i'
+        }
       },
       {
         page: pageQuery.page,
@@ -225,7 +229,11 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
         populate: {
           path: 'mediaBlocks',
           match: {
-            status: 'untranslated'
+            status: 'untranslated',
+            updatedAt: {
+              $gte: mediaBlocksQuery.startDate,
+              $lt: mediaBlocksQuery.stopDate
+            }
           }
         }
       }
@@ -253,12 +261,15 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
 exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
   const pageQuery = {
     limit: parseInt(queryParams.limit, 10),
-    page: parseInt(queryParams.page, 10)
+    page: parseInt(queryParams.page, 10),
+    websiteUrl: queryParams.website
   }
 
   const mediaBlocksQuery = {
     status: 'untranslated',
-    search: queryParams.search || ''
+    search: queryParams.search || '',
+    startDate: queryParams.startDate,
+    stopDate: queryParams.stopDate
   }
 
   return newProcessQuery(pageQuery, mediaBlocksQuery)
@@ -270,6 +281,7 @@ exports.countAllUntranslatedMediablocks = async () => {
 
   const fetchingRounds = ((pageCount / pagesPerQuery) + 1).toFixed()
   let totalPages = 0
+  let untranslatedWordsCounter = 0
   const untranslatedMediaBlocks = new Set()
 
   for (let i = 1; i <= fetchingRounds; i++) {
@@ -294,6 +306,7 @@ exports.countAllUntranslatedMediablocks = async () => {
         if (mediaBlocks.length) {
           mediaBlocks.forEach(mb => {
             untranslatedMediaBlocks.add(mb._doc._id.toString())
+            untranslatedWordsCounter += mb.rawText.split(' ').length
           })
         }
       }
@@ -302,5 +315,7 @@ exports.countAllUntranslatedMediablocks = async () => {
     totalPages = result.totalDocs
   }
 
-  return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size }
+  console.log(untranslatedWordsCounter)
+
+  return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size, untranslatedWordCount: untranslatedWordsCounter }
 }
