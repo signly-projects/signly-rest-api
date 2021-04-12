@@ -119,3 +119,13 @@ exports.getSite = async (req, res, next) => {
 
   return res.status(200).send({ site: site, pages: sitePages, stats: stats })
 }
+
+exports.deleteSite = async (req, res, next) => {
+  const site = await SiteService.delete(req.params.id)
+
+  if (!site) {
+    return res.status(404).send('Site with the given ID not found.')
+  }
+
+  res.status(200).send({ site })
+}
