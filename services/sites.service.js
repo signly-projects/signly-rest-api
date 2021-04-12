@@ -84,3 +84,7 @@ exports.findById = async (siteId, query) => {
 
   return Site.findById(siteId)
 }
+
+exports.delete = async (pageId) => {
+  return Site.findByIdAndDelete(pageId)
+}
