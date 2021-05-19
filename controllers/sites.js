@@ -81,7 +81,8 @@ exports.getSite = async (req, res, next) => {
     return Object.assign({}, {
       uri: page.uri,
       textSegments: pageStats.textSegments,
-      words: pageStats.words
+      words: pageStats.words,
+      createdAt: page.createdAt
     })
   })
 
