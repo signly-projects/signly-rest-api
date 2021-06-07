@@ -2,7 +2,7 @@ const { Site } = require('~models/site')
 const { Page } = require('~models/page')
 
 const MAX_ITEMS = 100
-const MAX_PAGES_PER_QUERY = 20
+const MAX_PAGES_PER_QUERY = 10
 
 exports.countAll = async () => {
   return Site.countDocuments()
