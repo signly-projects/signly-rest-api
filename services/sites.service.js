@@ -85,6 +85,13 @@ exports.findById = async (siteId, query) => {
   return Site.findById(siteId)
 }
 
-exports.delete = async (pageId) => {
-  return Site.findByIdAndDelete(pageId)
+exports.findByIdAndUpdate = async (siteId, query) => {
+  return await Site.findByIdAndUpdate(siteId, query)
+}
+
+exports.delete = async (siteId) => {
+  const site = await Site.findById(siteId)
+  await Page.deleteMany({ id: { $in: site.pages } })
+
+  return site.delete()
 }
