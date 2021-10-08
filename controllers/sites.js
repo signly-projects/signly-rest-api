@@ -1,4 +1,5 @@
 const SiteService = require('~services/sites.service')
+const { validateSite } = require('~models/site')
 
 const concat = (x, y) => x.concat(y)
 const flatMap = (f, arr) => arr.map(f).reduce(concat, [])
@@ -119,6 +120,22 @@ exports.getSite = async (req, res, next) => {
   }
 
   return res.status(200).send({ site: site, pages: sitePages, stats: stats })
+}
+
+exports.patchSite = async (req, res, next) => {
+  const { error } = validateSite(req.body)
+
+  if (error) {
+    return res.status(422).send(error.details[0].message)
+  }
+
+  let site = await SiteService.findByIdAndUpdate(decodeURIComponent(req.params.id), req.body)
+
+  if (!site) {
+    return res.status(404).send('Site with the given ID not found.')
+  }
+
+  res.status(200).send({ site: site })
 }
 
 exports.deleteSite = async (req, res, next) => {

@@ -11,6 +11,10 @@ const SiteSchema = new mongoose.Schema(
     url: {
       type: String
     },
+    approved: {
+      type: Boolean,
+      default: false
+    },
     pages: [{ type: Schema.Types.ObjectId, ref: 'Page' }]
   },
   {
@@ -22,8 +26,9 @@ const Site = mongoose.model('Site', SiteSchema)
 
 function validateSite (site) {
   const schema = {
-    title: Joi.string().required(),
-    url: Joi.string().uri().required()
+    title: Joi.string(),
+    url: Joi.string().uri(),
+    approved: Joi.boolean()
   }
   return Joi.validate(site, schema)
 }
