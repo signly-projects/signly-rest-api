@@ -298,6 +298,14 @@ const createStreamingLocator = async (assetName, locatorName) => {
 }
 
 const getStreamingUrls = async (locatorName) => {
+  if (!authResponse) {
+    authResponse = await logInToAzure()
+  }
+
+  if (!azureMediaServicesClient) {
+    azureMediaServicesClient = new AzureMediaServices(authResponse.credentials, AZURE_SUBSCRIPTION_ID, { noRetryPolicy: true })
+  }
+
   let streamingEndpoint = await azureMediaServicesClient.streamingEndpoints.get(
     RESOURCE_GROUP,
     AMS_ACCOUNT_NAME,
@@ -319,7 +327,7 @@ const getStreamingUrls = async (locatorName) => {
     if (downloadPath.includes('_608x1080_') && downloadPath.endsWith('.mp4')) {
       videoUri = downloadPath
     }
-    console.log(downloadPath)
+    console.log(videoUri)
   }
 
   return videoUri
@@ -327,5 +335,6 @@ const getStreamingUrls = async (locatorName) => {
 
 module.exports = {
   storeVideoFile,
-  getEncodingJobResult
+  getEncodingJobResult,
+  getStreamingUrls
 }

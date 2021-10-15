@@ -9,6 +9,7 @@ const {
   getMediaBlocksExport,
   getMediaBlock,
   getMediaBlockByNormalizedText,
+  resolveProcessingMediaBLocks,
   patchMediaBlock,
   deleteMediaBlocks
 } = require('~controllers/media-blocks')
@@ -32,6 +33,9 @@ router.get('/search', getMediaBlockByNormalizedText)
 
 // GET /api/media-blocks/export
 router.get('/export', getMediaBlocksExport)
+
+// GET /api/media-blocks/resolve-processing
+router.get('/resolve-processing', resolveProcessingMediaBLocks)
 
 // GET /api/media-blocks/:id
 router.get('/:id', validateObjectId, getMediaBlock)

@@ -48,6 +48,12 @@ exports.getMediaBlockByNormalizedText = async (req, res, next) => {
   res.status(200).send({ mediaBlock: mediaBlock })
 }
 
+exports.resolveProcessingMediaBLocks = async (req, res, next) => {
+  const mediaBlocks = await MediaBlocksService.resolveProcessingMediaBLocks()
+
+  res.status(200).send({ mediaBlocks, resolved: mediaBlocks.length })
+}
+
 exports.patchMediaBlock = async (req, res, next) => {
   const newMediaBlock = {
     bslScript: req.body.bslScript,

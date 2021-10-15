@@ -133,6 +133,34 @@ exports.findOrCreateMediaBlocks = async (newPage, page) => {
   return mediaBlocks
 }
 
+exports.resolveProcessingMediaBLocks = async () => {
+  const mediaBlocks = await MediaBlock.find({ status: 'processing' })
+  let results = []
+
+  for (let i = 0; i < mediaBlocks.length; i++) {
+    if (mediaBlocks[i].video && mediaBlocks[i].video.amsIdentifier) {
+      try {
+        const videoUri = await AzureService.getStreamingUrls(`locator_${mediaBlocks[i].video.amsIdentifier}`)
+
+        if (videoUri) {
+          const updatedMediaBlock = await this.updateVideoState(mediaBlocks[i]._id, 'translated', videoUri)
+          results.push({
+            mediaBlockId: updatedMediaBlock._id,
+            text: updatedMediaBlock.rawText,
+            status: updatedMediaBlock.status
+          })
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error)
+      }
+
+    }
+  }
+
+  return results
+}
+
 exports.update = async (mediaBlock, newMediaBlock, videoFile) => {
   if (videoFile) {
     const result = await AzureService.storeVideoFile(mediaBlock._id, videoFile)
