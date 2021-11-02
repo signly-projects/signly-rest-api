@@ -315,7 +315,11 @@ exports.countAllUntranslatedMediablocks = async () => {
     totalPages = result.totalDocs
   }
 
-  console.log(untranslatedWordsCounter)
-
   return { pageCount: totalPages, untranslatedMediaBlockCount: untranslatedMediaBlocks.size, untranslatedWordCount: untranslatedWordsCounter }
+}
+
+exports.addMediaBlockToPage = async (page, mediaBlock) => {
+  page.mediaBlocks.push(mediaBlock)
+
+  return await page.save()
 }
