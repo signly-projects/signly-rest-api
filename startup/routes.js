@@ -4,7 +4,7 @@ const pagesPrivate = require('~routes/v1/private/pages')
 const mediaBlocksPrivate = require('~routes/v1/private/media-blocks')
 const pagesPublic = require('~routes/v1/public/pages')
 const statusPublic = require('~routes/v1/public/status')
-const signItPublic = require('~routes/v1/public/sign-it')
+const signItPublic = require('~routes/v1/public/signit')
 const header = require('~middleware/header')
 const error = require('~middleware/error')
 const json2xls = require('json2xls')
@@ -25,7 +25,7 @@ module.exports = function (app) {
   app.use('/api/v1/public/status', statusPublic)
 
   app.use('/api/v1/public/media-blocks', mediaBlocksPrivate)
-  app.use('/api/v1/public/sign-it', signItPublic)
+  app.use('/api/v1/public/signit', signItPublic)
 
   app.use(error)
 }

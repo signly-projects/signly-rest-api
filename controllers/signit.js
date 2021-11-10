@@ -11,7 +11,15 @@ exports.getCrossCountryMediaBlocks = async (req, res, next) => {
     return res.status(404).send('Page https://signly.co/cross-country/ not found.')
   }
 
-  res.status(200).send({ textSegments: page && page.mediaBlocks })
+  const mediaBlocks = page.mediaBlocks
+    .filter(mb => mb.status === 'translated')
+    .map(
+      (mb) => {
+        return { id: mb._id, name: mb.rawText, video: mb.video.uri }
+      }
+    )
+
+  res.status(200).send({ textSegments: mediaBlocks })
 }
 
 exports.createCrossCountryMediaBlock = async (req, res, next) => {
