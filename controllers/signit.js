@@ -14,8 +14,8 @@ exports.getCrossCountryMediaBlocks = async (req, res, next) => {
   const mediaBlocks = page.mediaBlocks
     .filter(mb => mb.status === 'translated')
     .map(
-      (mb, index) => {
-        return { id: index, name: mb.rawText, video: mb.video.uri }
+      (mb) => {
+        return { id: mb._id, name: mb.rawText, video: mb.video.uri }
       }
     )
 
