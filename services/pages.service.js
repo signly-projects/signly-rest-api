@@ -216,7 +216,14 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
   const result = await Page
     .paginate(
       {
-        enabled: true,
+        $or: [
+          {
+            enabled: true
+          },
+          {
+            signit: true
+          }
+        ],
         uri: {
           $regex: `^${pageQuery.websiteUrl || ''}`,
           $options: 'i'
@@ -288,7 +295,14 @@ exports.countAllUntranslatedMediablocks = async () => {
     const result = await Page
       .paginate(
         {
-          enabled: true
+          $or: [
+            {
+              enabled: true
+            },
+            {
+              signit: true
+            }
+          ]
         },
         {
           page: i,
