@@ -23,6 +23,10 @@ const PageSchema = new Schema(
       type: Number,
       default: 1
     },
+    signit: {
+      type: Boolean,
+      default: false
+    },
     site: SiteSchema,
     mediaBlocks: [{ type: Schema.Types.ObjectId, ref: 'MediaBlock' }],
     mediaBlocksIndexes: [Schema.Types.Mixed]
