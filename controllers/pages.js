@@ -22,7 +22,8 @@ exports.getPageByUri = async (req, res, next) => {
 }
 
 exports.getPage = async (req, res, next) => {
-  const page = await PageService.findById(req.params.id, true)
+  const withMediaBlocks = true
+  const page = await PageService.findById(req.params.id, withMediaBlocks, req.query.status)
 
   if (!page) {
     return res.status(404).send('Page with the given ID not found.')
@@ -40,7 +41,7 @@ exports.createPage = async (req, res, next) => {
   }
 
   let page = await PageService.findByUri(decodeURIComponent(newPage.uri))
-  let mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
+  const mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
 
   if (!page) {
     let page = await PageService.create(newPage, mediaBlocks)

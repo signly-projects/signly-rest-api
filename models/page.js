@@ -23,6 +23,10 @@ const PageSchema = new Schema(
       type: Number,
       default: 1
     },
+    translated: {
+      type: Boolean,
+      default: false
+    },
     signit: {
       type: Boolean,
       default: false
@@ -52,6 +56,7 @@ function validatePage (page, type = 'create') {
     uri: type === 'create' ? Joi.string().uri().required() : Joi.string().uri(),
     enabled: Joi.boolean(),
     requested: Joi.number(),
+    translated: Joi.boolean(),
     site: Joi.objectId(),
     title: Joi.string(),
     mediaBlocks: Joi.array().items(Joi.object(mediaBlockSchema).allow(null).allow(''))

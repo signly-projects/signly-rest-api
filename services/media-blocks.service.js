@@ -114,7 +114,7 @@ const getUniqueMediaBlocks = (newMediaBlocks) => {
 exports.findOrCreateMediaBlocks = async (newPage, page) => {
   let mediaBlocks = []
 
-  if (newPage.mediaBlocks) {
+  if (newPage && newPage.mediaBlocks) {
     const newMediaBlocks = getUniqueMediaBlocks(newPage.mediaBlocks)
 
     await Promise.all(newMediaBlocks.map(async (newMediaBlock) => {
@@ -122,10 +122,10 @@ exports.findOrCreateMediaBlocks = async (newPage, page) => {
 
       if (page && page.mediaBlocks && page.mediaBlocks.length) {
         if (!page.mediaBlocks.some(existingMediaBlock => existingMediaBlock._id.equals(mediaBlock._id))) {
-          mediaBlocks.push(mediaBlock._id)
+          mediaBlocks.push(mediaBlock)
         }
       } else {
-        mediaBlocks.push(mediaBlock._id)
+        mediaBlocks.push(mediaBlock)
       }
     }))
   }
