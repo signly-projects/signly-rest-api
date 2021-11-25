@@ -133,8 +133,18 @@ exports.findByUri = async (uri, withMediaBlocks = false) => {
   return Page.findOne({ uri: uri })
 }
 
-exports.findById = async (pageId, withMediaBlocks = false) => {
+exports.findById = async (pageId, withMediaBlocks = false, status = null) => {
   if (withMediaBlocks) {
+    if (status) {
+      return Page.findById(pageId)
+        .populate({
+          path: 'mediaBlocks',
+          match: {
+            status
+          }
+        })
+    }
+
     return Page.findById(pageId).populate('mediaBlocks')
   }
 
@@ -142,30 +152,30 @@ exports.findById = async (pageId, withMediaBlocks = false) => {
 }
 
 exports.create = async (newPage, mediaBlocks) => {
+  const mediaBlockIds = mediaBlocks.map(mb => mb._id)
+
   let page = new Page({
     requested: newPage.requested,
     enabled: true,
     // enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
     title: newPage.title,
     uri: newPage.uri,
-    mediaBlocks: mediaBlocks
+    mediaBlocks: mediaBlockIds,
+    translated: !mediaBlocks.some(mb => mb.status === 'untranslated')
   })
 
   return await page.save()
 }
 
 exports.update = async (page, newPage, mediaBlocks) => {
+  const mediaBlockIds = mediaBlocks.map(mb => mb._id)
+
   page.title = newPage.title || page.title
   page.uri = newPage.uri || page.uri
   page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
-  page.mediaBlocks.push(...mediaBlocks)
+  page.mediaBlocks.push(...mediaBlockIds)
 
-  return await page.save()
-}
-
-exports.updateRequest = async (page, mediaBlocks) => {
-  page.requested += 1
-  page.mediaBlocks.push(...mediaBlocks)
+  page.translated = newPage.translated || !mediaBlocks.some(mb => mb.status === 'untranslated')
 
   return await page.save()
 }
@@ -210,9 +220,7 @@ exports.deleteMediaBlock = async (pageId, mediaBlockId) => {
   )
 }
 
-const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
-  const pages = []
-
+const newProcessQuery = async (pageQuery) => {
   const result = await Page
     .paginate(
       {
@@ -224,6 +232,7 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
             signit: true
           }
         ],
+        translated: false,
         uri: {
           $regex: `^${pageQuery.websiteUrl || ''}`,
           $options: 'i'
@@ -233,36 +242,10 @@ const newProcessQuery = async (pageQuery, mediaBlocksQuery) => {
         page: pageQuery.page,
         limit: pageQuery.limit,
         sort: { createdAt: 'desc' },
-        populate: {
-          path: 'mediaBlocks',
-          match: {
-            status: 'untranslated',
-            updatedAt: {
-              $gte: mediaBlocksQuery.startDate,
-              $lt: mediaBlocksQuery.stopDate
-            }
-          }
-        }
       }
     )
 
-  result.docs.forEach((page) => {
-    if (page.mediaBlocks.length > 0) {
-      let mediaBlocks = page.mediaBlocks.filter(mb => mb.rawText.match(new RegExp(mediaBlocksQuery.search, 'i')))
-
-      if (mediaBlocks.length) {
-        mediaBlocks = addPageIndexToMediaBlocks(mediaBlocks, page.mediaBlocksIndexes)
-
-        // Sorts mediaBlocks by page index in asc order
-        mediaBlocks.sort(nestedSort('_doc', 'pageIndex', 'asc'))
-        page.mediaBlocks = mediaBlocks
-        page.mediaBlocksIndexes = undefined
-        pages.push(page)
-      }
-    }
-  })
-
-  return { pages, totalPages: result.totalDocs }
+  return { pages: result.docs, totalPages: result.totalDocs }
 }
 
 exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
@@ -272,14 +255,7 @@ exports.findAllWithUntranslatedMediablocks = async (queryParams) => {
     websiteUrl: queryParams.website
   }
 
-  const mediaBlocksQuery = {
-    status: 'untranslated',
-    search: queryParams.search || '',
-    startDate: queryParams.startDate,
-    stopDate: queryParams.stopDate
-  }
-
-  return newProcessQuery(pageQuery, mediaBlocksQuery)
+  return newProcessQuery(pageQuery)
 }
 
 exports.countAllUntranslatedMediablocks = async () => {
