@@ -2,7 +2,18 @@ const express = require('express')
 const validateObjectId = require('~middleware/validateObjectId')
 const validateUri = require('~middleware/validateUri')
 const mediaBlocks = require('~routes/v1/private/pages/media-blocks')
-const { getPages, getPage, getPageByUri, createPage, patchPage, deletePage, getStudioPages, getStudioPageCount } = require('~controllers/pages')
+
+const {
+  getPages,
+  getPage,
+  getPageByUri,
+  createPage,
+  patchPage,
+  deletePage,
+  getStudioPages,
+  getStudioPageCount,
+  setPageAsUntranslated
+} = require('~controllers/pages')
 
 const router = express.Router()
 
@@ -23,6 +34,9 @@ router.get('/:id', validateObjectId, getPage)
 
 // POST /api/pages
 router.post('/', createPage)
+
+// PATCH /api/pages/studio/
+router.patch('/studio/set-as-untranslated', setPageAsUntranslated)
 
 // PATCH /api/pages/:pageId
 router.patch('/:id', validateObjectId, patchPage)

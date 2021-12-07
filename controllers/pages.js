@@ -59,6 +59,22 @@ exports.createPage = async (req, res, next) => {
   res.status(200).send({ page: page })
 }
 
+exports.setPageAsUntranslated = async (req, res, next) => {
+  let page = await PageService.findOneByMediaBlockId(req.body.mediaBlockId)
+
+  if (!page) {
+    return res.status(404).send('No pages with given media block id found')
+  }
+
+  const hasUntranslatedMediaBlocks = page.mediaBlocks.some(mb => mb.status === 'untranslated')
+
+  if (hasUntranslatedMediaBlocks) {
+    page = await PageService.update(page, { translated: false }, [])
+  }
+
+  res.status(200).send({ page: page })
+}
+
 exports.patchPage = async (req, res, next) => {
   const newPage = req.body.page
   const { error } = validatePage(newPage, 'update')
