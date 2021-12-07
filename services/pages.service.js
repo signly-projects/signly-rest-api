@@ -1,4 +1,5 @@
 const safe = require('safe-regex')
+const mongoose = require('mongoose')
 
 const { Page } = require('~models/page')
 const { MediaBlock } = require('~models/media-block')
@@ -133,14 +134,14 @@ exports.findByUri = async (uri, withMediaBlocks = false) => {
   return Page.findOne({ uri: uri })
 }
 
-exports.findById = async (pageId, withMediaBlocks = false, status = null) => {
+exports.findById = async (pageId, withMediaBlocks = false, mediaBlockStatus = null) => {
   if (withMediaBlocks) {
-    if (status) {
+    if (mediaBlockStatus) {
       return Page.findById(pageId)
         .populate({
           path: 'mediaBlocks',
           match: {
-            status
+            status: mediaBlockStatus
           }
         })
     }
@@ -149,6 +150,10 @@ exports.findById = async (pageId, withMediaBlocks = false, status = null) => {
   }
 
   return Page.findById(pageId)
+}
+
+exports.findOneByMediaBlockId = async (mediaBlockId) => {
+  return Page.findOne({ mediaBlocks: mongoose.Types.ObjectId(mediaBlockId) }).populate('mediaBlocks')
 }
 
 exports.create = async (newPage, mediaBlocks) => {
@@ -175,7 +180,7 @@ exports.update = async (page, newPage, mediaBlocks) => {
   page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
   page.mediaBlocks.push(...mediaBlockIds)
 
-  page.translated = newPage.translated || !mediaBlocks.some(mb => mb.status === 'untranslated')
+  page.translated = newPage.hasOwnProperty('translated') ? newPage.translated : !mediaBlocks.some(mb => mb.status === 'untranslated')
 
   return await page.save()
 }
