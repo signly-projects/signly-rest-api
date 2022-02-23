@@ -12,11 +12,13 @@ exports.getPages = async (req, res, next) => {
 }
 
 exports.getPageByUri = async (req, res, next) => {
-  const page = await PageService.findByUri(decodeURIComponent(req.query.uri), true)
+  let page = await PageService.findByUri(decodeURIComponent(req.query.uri), true)
 
   if (!page) {
     return res.status(404).send('Page with the given URI not found.')
   }
+
+  page = await PageService.incrementVisits(page)
 
   res.status(200).send({ page: page })
 }
