@@ -172,6 +172,12 @@ exports.create = async (newPage, mediaBlocks) => {
   return await page.save()
 }
 
+exports.incrementVisits = async (page) => {
+  page.visitCounter += 1
+
+  return await page.save()
+}
+
 exports.update = async (page, newPage, mediaBlocks) => {
   const mediaBlockIds = mediaBlocks.map(mb => mb._id)
 

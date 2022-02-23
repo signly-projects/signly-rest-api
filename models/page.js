@@ -23,6 +23,10 @@ const PageSchema = new Schema(
       type: Number,
       default: 1
     },
+    visitCounter: {
+      type: Number,
+      default: 0
+    },
     translated: {
       type: Boolean,
       default: false
@@ -56,6 +60,7 @@ function validatePage (page, type = 'create') {
     uri: type === 'create' ? Joi.string().uri().required() : Joi.string().uri(),
     enabled: Joi.boolean(),
     requested: Joi.number(),
+    visitCounter: Joi.number(),
     translated: Joi.boolean(),
     site: Joi.objectId(),
     title: Joi.string(),
