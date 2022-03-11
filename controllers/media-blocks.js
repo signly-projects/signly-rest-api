@@ -1,6 +1,7 @@
 const { validateMediaBlock } = require('~models/media-block')
 
 const MediaBlocksService = require('~services/media-blocks.service')
+const PagesService = require('~services/pages.service')
 
 exports.getMediaBlocks = async (req, res, next) => {
   const result = await MediaBlocksService.findAll(req.query)
@@ -78,6 +79,10 @@ exports.patchMediaBlock = async (req, res, next) => {
   }
 
   mediaBlock = await MediaBlocksService.update(mediaBlock, newMediaBlock, req.file)
+
+  if (newMediaBlock.status === 'untranslated') {
+    await PagesService.updateTranslatedPages(mediaBlock._id)
+  }
 
   res.status(200).send({ mediaBlock: mediaBlock })
 }
