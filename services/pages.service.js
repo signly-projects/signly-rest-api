@@ -324,3 +324,12 @@ exports.addMediaBlockToPage = async (page, mediaBlock) => {
 
   return await page.save()
 }
+
+exports.updateTranslatedPages = async (mediaBlockId) => {
+  let pages = await Page.find({ mediaBlocks: mongoose.Types.ObjectId(mediaBlockId) })
+
+  for (const page of pages) {
+    page.translated = false
+    await page.save()
+  }
+}
