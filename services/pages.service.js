@@ -333,3 +333,11 @@ exports.updateTranslatedPages = async (mediaBlockId) => {
     await page.save()
   }
 }
+
+exports.deletePagesByIds = async (pageIds) => {
+  return await Page.deleteMany({
+    _id: {
+      $in: pageIds
+    }
+  })
+}

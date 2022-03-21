@@ -12,6 +12,12 @@ exports.getPages = async (req, res, next) => {
 }
 
 exports.getPageByUri = async (req, res, next) => {
+  let site = await SiteService.findByPageUrl(req.query.uri)
+
+  if (site && !site.active) {
+    return res.status(404).send('Site for the requested page is not active.')
+  }
+
   let page = await PageService.findByUri(decodeURIComponent(req.query.uri), true)
 
   if (!page) {
@@ -42,18 +48,21 @@ exports.createPage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
+  let site = await SiteService.findOrCreate(page.uri, page._id)
+
+  if (!site.active) {
+    return res.status(401).send('Website not authorized')
+  }
+
   let page = await PageService.findByUri(decodeURIComponent(newPage.uri))
   const mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
 
   if (!page) {
     let page = await PageService.create(newPage, mediaBlocks)
-    await SiteService.findOrCreate(page.uri, page._id)
     page = await PageService.indexMediaBlocks(page, newPage)
 
     return res.status(201).send({ page: page })
   }
-
-  await SiteService.findOrCreate(page.uri, page._id)
 
   page = await PageService.update(page, newPage, mediaBlocks)
   page = await PageService.indexMediaBlocks(page, newPage)

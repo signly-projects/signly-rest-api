@@ -1,4 +1,5 @@
 const SiteService = require('~services/sites.service')
+const PageService = require('~services/pages.service')
 const { validateSite } = require('~models/site')
 
 const concat = (x, y) => x.concat(y)
@@ -140,7 +141,13 @@ exports.patchSite = async (req, res, next) => {
 }
 
 exports.deleteSite = async (req, res, next) => {
-  const site = await SiteService.delete(req.params.id)
+  let site = await SiteService.findById(req.params.id)
+
+  if (site.pages.length > 0) {
+    await PageService.deletePagesByIds(site.pages)
+  }
+
+  site = await SiteService.delete(req.params.id)
 
   if (!site) {
     return res.status(404).send('Site with the given ID not found.')

@@ -19,6 +19,12 @@ exports.findAll = async (query) => {
   return await Site.find().limit(options.limit).sort(options.sort)
 }
 
+exports.findByPageUrl = async (pageUrl) => {
+  let siteObject = new URL(pageUrl)
+
+  return await Site.findOne({ url: siteObject.origin })
+}
+
 exports.findOrCreate = async (pageUrl, pageId) => {
   let urlObject = new URL(pageUrl)
 
