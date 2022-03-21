@@ -48,7 +48,7 @@ exports.createPage = async (req, res, next) => {
     return res.status(422).send(error.details[0].message)
   }
 
-  let site = await SiteService.findOrCreate(page.uri, page._id)
+  let site = await SiteService.findOrCreate(newPage.uri)
 
   if (!site.active) {
     return res.status(401).send('Website not authorized')
@@ -61,11 +61,15 @@ exports.createPage = async (req, res, next) => {
     let page = await PageService.create(newPage, mediaBlocks)
     page = await PageService.indexMediaBlocks(page, newPage)
 
+    await SiteService.addPageToSite(site, page._id)
+
     return res.status(201).send({ page: page })
   }
 
   page = await PageService.update(page, newPage, mediaBlocks)
   page = await PageService.indexMediaBlocks(page, newPage)
+
+  await SiteService.addPageToSite(site, page._id)
 
   res.status(200).send({ page: page })
 }
