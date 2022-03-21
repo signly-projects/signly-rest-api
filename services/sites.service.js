@@ -25,7 +25,7 @@ exports.findByPageUrl = async (pageUrl) => {
   return await Site.findOne({ url: siteObject.origin })
 }
 
-exports.findOrCreate = async (pageUrl, pageId) => {
+exports.findOrCreate = async (pageUrl) => {
   let urlObject = new URL(pageUrl)
 
   let site = await Site.findOne({ url: urlObject.origin })
@@ -37,7 +37,11 @@ exports.findOrCreate = async (pageUrl, pageId) => {
     })
   }
 
-  if (!site.pages.some(page => page._id.equals(pageId))) {
+  return await site.save()
+}
+
+exports.addPageToSite = async (site, pageId) => {
+  if (!site.pages.some(pId => pId.equals(pageId))) {
     site.pages.push(pageId)
   }
 
