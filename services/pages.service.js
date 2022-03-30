@@ -186,7 +186,8 @@ exports.update = async (page, newPage, mediaBlocks) => {
   page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
   page.mediaBlocks.push(...mediaBlockIds)
 
-  page.translated = newPage.hasOwnProperty('translated') ? newPage.translated : page.translated
+  const existingPage = await Page.findOne({ uri: page.uri }).populate(['mediaBlocks'])
+  page.translated = newPage.translated || !existingPage.mediaBlocks.some(mb => mb.status === 'untranslated')
 
   return await page.save()
 }

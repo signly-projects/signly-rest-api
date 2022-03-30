@@ -55,10 +55,10 @@ exports.createPage = async (req, res, next) => {
   }
 
   let page = await PageService.findByUri(decodeURIComponent(newPage.uri))
-  const mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
+  const newMediaBlocks = await MediaBlocksService.findOrCreateNewMediaBlocks(newPage, page)
 
   if (!page) {
-    let page = await PageService.create(newPage, mediaBlocks)
+    let page = await PageService.create(newPage, newMediaBlocks)
     page = await PageService.indexMediaBlocks(page, newPage)
 
     await SiteService.addPageToSite(site, page._id)
@@ -66,7 +66,7 @@ exports.createPage = async (req, res, next) => {
     return res.status(201).send({ page: page })
   }
 
-  page = await PageService.update(page, newPage, mediaBlocks)
+  page = await PageService.update(page, newPage, newMediaBlocks)
   page = await PageService.indexMediaBlocks(page, newPage)
 
   await SiteService.addPageToSite(site, page._id)
@@ -104,9 +104,9 @@ exports.patchPage = async (req, res, next) => {
     return res.status(404).send('Page with the given ID not found.')
   }
 
-  let mediaBlocks = await MediaBlocksService.findOrCreateMediaBlocks(newPage, page)
+  let newMediaBlocks = await MediaBlocksService.findOrCreateNewMediaBlocks(newPage, page)
 
-  page = await PageService.update(page, newPage, mediaBlocks)
+  page = await PageService.update(page, newPage, newMediaBlocks)
   res.status(200).send({ page: page })
 }
 
