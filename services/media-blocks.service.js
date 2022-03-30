@@ -111,7 +111,7 @@ const getUniqueMediaBlocks = (newMediaBlocks) => {
   return newMediaBlocks.filter(mb => (!unique[mb.rawText.toLowerCase()]) && (unique[mb.rawText.toLowerCase()] = true))
 }
 
-exports.findOrCreateMediaBlocks = async (newPage, page) => {
+exports.findOrCreateNewMediaBlocks = async (newPage, page) => {
   let mediaBlocks = []
 
   if (newPage && newPage.mediaBlocks) {
