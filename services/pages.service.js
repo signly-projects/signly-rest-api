@@ -162,7 +162,6 @@ exports.create = async (newPage, mediaBlocks) => {
   let page = new Page({
     requested: newPage.requested,
     enabled: true,
-    // enabled: newPage.hasOwnProperty('enabled') ? newPage.enabled : false,
     title: newPage.title,
     uri: newPage.uri,
     mediaBlocks: mediaBlockIds,
@@ -186,8 +185,16 @@ exports.update = async (page, newPage, mediaBlocks) => {
   page.enabled = newPage.hasOwnProperty('enabled') ? newPage.enabled : page.enabled
   page.mediaBlocks.push(...mediaBlockIds)
 
-  const existingPage = await Page.findOne({ uri: page.uri }).populate(['mediaBlocks'])
-  page.translated = newPage.translated || !existingPage.mediaBlocks.some(mb => mb.status === 'untranslated')
+  const hasNewUntranslated = mediaBlocks.some(mb => mb.status === 'untranslated')
+
+  if (hasNewUntranslated) {
+    page.translated = newPage.translated || !hasNewUntranslated
+  } else {
+    const existingPage = await Page.findOne({ uri: page.uri }).populate(['mediaBlocks'])
+    const hasOldUntranslated = existingPage.mediaBlocks.some(mb => mb.status === 'untranslated')
+
+    page.translated = newPage.translated || !hasOldUntranslated
+  }
 
   return await page.save()
 }
