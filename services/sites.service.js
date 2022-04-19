@@ -19,6 +19,10 @@ exports.findAll = async (query) => {
   return await Site.find().limit(options.limit).sort(options.sort)
 }
 
+exports.find = async () => {
+  return await Site.find().sort({ title: 'asc' })
+}
+
 exports.findByPageUrl = async (pageUrl) => {
   let siteObject = new URL(pageUrl)
 
