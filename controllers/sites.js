@@ -155,3 +155,43 @@ exports.deleteSite = async (req, res, next) => {
 
   res.status(200).send({ site })
 }
+
+exports.getTranslatorsReport = async (req, res, next) => {
+  const sites = await SiteService.find()
+
+  const sitesReport = []
+
+  for (const site of sites) {
+    const pages = await PageService.findAllByBaseUrl(site.url)
+
+    const siteUntranslatedTextSegments = []
+    const siteReviewTextSegments = []
+    for (const page of pages) {
+      const p = await PageService.findByIdForReport(page._id)
+
+      for (const mediaBlock of p.mediaBlocks) {
+        if (mediaBlock.status === 'untranslated' && !siteUntranslatedTextSegments.includes(mediaBlock.rawText)) {
+          siteUntranslatedTextSegments.push(mediaBlock.rawText)
+        }
+
+        if (mediaBlock.status === 'review' && !siteReviewTextSegments.includes(mediaBlock.rawText)) {
+          siteReviewTextSegments.push(mediaBlock.rawText)
+        }
+      }
+    }
+
+    const siteUntranslatedUTSWordCount = siteUntranslatedTextSegments.reduce((total, next) => total + next.split(' ').length, 0)
+
+
+    if (siteUntranslatedTextSegments.length > 0 || siteUntranslatedUTSWordCount > 0 || siteReviewTextSegments.length > 0) {
+      sitesReport.push({
+        site: site.url,
+        untranslatedUTS: siteUntranslatedTextSegments.length,
+        untranslatedUTSWordCount: siteUntranslatedUTSWordCount,
+        reviewUTS: siteReviewTextSegments.length
+      })
+    }
+  }
+
+  res.status(200).send({ sitesReport })
+}

@@ -126,12 +126,38 @@ exports.findAll = async (queryParams) => {
   return await Page.find(pageQuery).limit(options.limit).sort(options.sort)
 }
 
+exports.findAllByBaseUrl = async (baseUrl) => {
+  return Page.find({
+    uri: {
+      $regex: '^' + baseUrl,
+    },
+    enabled: true
+  })
+}
+
 exports.findByUri = async (uri, withMediaBlocks = false) => {
   if (withMediaBlocks) {
     return Page.findOne({ uri: uri }).populate(['mediaBlocks'])
   }
 
   return Page.findOne({ uri: uri })
+}
+
+exports.findByIdForReport = async (pageId) => {
+  return Page.findById(pageId)
+    .populate({
+      path: 'mediaBlocks',
+      match: {
+        $or: [
+          {
+            status: 'untranslated'
+          },
+          {
+            status: 'review'
+          }
+        ]
+      }
+    })
 }
 
 exports.findById = async (pageId, withMediaBlocks = false, mediaBlockStatus = null) => {
