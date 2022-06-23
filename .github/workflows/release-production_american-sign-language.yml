@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'american-sign-language'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AD6142E8CDF3465DA58FEF2623143F40 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4F21899AE0C4448DB54CFCFB75F24084 }}
           package: .
