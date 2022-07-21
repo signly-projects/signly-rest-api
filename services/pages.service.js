@@ -113,7 +113,8 @@ exports.findAll = async (queryParams) => {
     sort: {
       requested: 'desc'
     },
-    limit: queryParams.limit ? parseInt(queryParams.limit, 10) : MAX_ITEMS
+    limit: queryParams.limit ? parseInt(queryParams.limit, 10) : MAX_ITEMS,
+    page: queryParams.page ? parseInt(queryParams.page, 10) : 1
   }
 
   if (queryParams.withMediaBlocks) {
@@ -122,6 +123,21 @@ exports.findAll = async (queryParams) => {
   }
 
   const pageQuery = queryParams.enabled ? { enabled: true } : {}
+
+  if (queryParams.page > 1) {
+    const result = await Page
+      .paginate(
+        {
+          enabled: true
+        },
+        {
+          page: queryParams.page,
+          limit: queryParams.limit
+        }
+      )
+
+    return result.docs
+  }
 
   return await Page.find(pageQuery).limit(options.limit).sort(options.sort)
 }
