@@ -6,7 +6,7 @@ const MediaBlocksService = require('~services/media-blocks.service')
 
 exports.getPages = async (req, res, next) => {
   const pages = await PageService.findAll(req.query)
-  const totalPagesCount = await PageService.countAll(req.query)
+  const totalPagesCount = await PageService.countAll({ enabled: true })
 
   res.status(200).send({ pages: pages, count: totalPagesCount })
 }
